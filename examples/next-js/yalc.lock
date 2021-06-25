@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "jotai-query-toolkit": {
+      "signature": "028e835a728fa270afbe924dd999b609",
+      "file": true
+    }
+  }
+}
