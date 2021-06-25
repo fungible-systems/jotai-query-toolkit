@@ -75,6 +75,9 @@ const Component = () => {
 For data types that don't have unique parameters you need to fetch by, you can use the `atomWithQueryRefresh`, which is
 very similar to the jotai exported `atomWithQuery` but with some opinionated defaults and better initialData handling.
 
+You can see a [demo here](https://jqt-vite.vercel.app/), and
+the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/vite-react-ts/src/App.tsx).
+
 ```typescript
 import {atomWithQueryRefresh} from "jotai-query-toolkit";
 
@@ -90,6 +93,9 @@ const fooBarAtom = atomWithQueryRefresh<string>(MyQueryKeys.FooBar, async (get) 
 
 Next.js is a framework that makes using server side rendered react very easy. Fetching data on the server and ensuring
 that client state reflects that initial data is less easy. JQT hopes to make this experience much better.
+
+You can see a [demo here](https://jqt-next.vercel.app/), and
+the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/next-js/src/pages/index.tsx).
 
 To get started, create a query key and an atom:
 
