@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { atomFamilyWithQuery } from 'jotai-query-utils';
+import { atomFamilyWithQuery } from 'jotai-query-toolkit';
 import { useAtomValue } from 'jotai/utils';
 import toast, { Toaster } from 'react-hot-toast';
 
