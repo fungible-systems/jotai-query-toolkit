@@ -6,13 +6,17 @@ import { makeQueryKey } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 
+export interface AtomWithQueryRefreshOptions<Data> extends QueryObserverOptions {
+  equalityFn?: (a: Data, b: Data) => boolean;
+  getShouldRefetch?: (initialData: Data) => boolean;
+}
+
+export type AtomWithQueryRefreshQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
+
 export const atomWithQueryRefresh = <Data>(
   key: string,
-  queryFn: (get: Getter) => Data | Promise<Data>,
-  options: {
-    equalityFn?: (a: Data, b: Data) => boolean;
-    getShouldRefetch?: (initialData: Data) => boolean;
-  } & QueryObserverOptions = {}
+  queryFn: AtomWithQueryRefreshQueryFn<Data>,
+  options: AtomWithQueryRefreshOptions<Data> = {}
 ) => {
   const { equalityFn = deepEqual, getShouldRefetch, refetchInterval, ...rest } = options;
   let shouldRefresh = true;
