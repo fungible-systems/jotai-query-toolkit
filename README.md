@@ -95,6 +95,8 @@ const fooBarAtom = atomWithQueryRefresh<string>(MyQueryKeys.FooBar, async (get) 
 Next.js is a framework that makes using server side rendered react very easy. Fetching data on the server and ensuring
 that client state reflects that initial data is less easy. JQT hopes to make this experience much better.
 
+All next.js related functionality is exported via `jotai-query-toolkit/nextjs`.
+
 You can see a [demo here](https://jqt-next.vercel.app/), and
 the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/next-js/src/pages/index.tsx)
 .
@@ -143,6 +145,7 @@ Next we will go to the page which will contain this atom and component, and we'l
 from `jotai-query-toolkit`, and pass it our page props, and the query keys we are using.
 
 ```tsx
+import { QueryProvider } from 'jotai-query-toolkit/nextjs'
 // our next.js page component
 const MyHomePage = (props: Record<string, unknown>) => {
   return (
@@ -160,6 +163,8 @@ To fetch the data on the server, we'll use `getInitialProps` and from `getInitia
 from `jotai-query-toolkit`.
 
 ```ts
+import { getInitialPropsFromQueries } from 'jotai-query-toolkit/nextjs'
+
 // our queries
 const queries = [
   [
@@ -186,6 +191,8 @@ less connected queries, you can opt for the higher order component that takes mo
 example above to use the `withInitialQueries` HOC:
 
 ```tsx
+import { withInitialQueries } from 'jotai-query-toolkit/nextjs'
+
 // the same queries as above
 const queries = [
   [
