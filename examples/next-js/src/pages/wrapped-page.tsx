@@ -1,6 +1,8 @@
 import React from 'react';
-import { atomWithQueryRefresh, withInitialQueries, Queries } from 'jotai-query-toolkit';
 import { useAtom } from 'jotai';
+import { atomWithQueryRefresh } from 'jotai-query-toolkit';
+import { withInitialQueries } from 'jotai-query-toolkit/nextjs';
+import type { Queries } from 'jotai-query-toolkit/nextjs';
 
 // some values for demo, not specific to JQT
 let count = 0;

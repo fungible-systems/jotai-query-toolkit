@@ -1,10 +1,7 @@
 import React from 'react';
 import type { NextPageContext } from 'next';
-import {
-  atomWithQueryRefresh,
-  getInitialPropsFromQueries,
-  QueryProvider,
-} from 'jotai-query-toolkit';
+import { atomWithQueryRefresh } from 'jotai-query-toolkit';
+import { getInitialPropsFromQueries, QueryProvider } from 'jotai-query-toolkit/nextjs';
 import { useAtom } from 'jotai';
 
 // some values for demo, not specific to JQT

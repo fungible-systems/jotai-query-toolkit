@@ -1066,10 +1066,10 @@ jest-worker@27.0.0-next.5:
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
 
-jotai-query-toolkit@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/jotai-query-toolkit/-/jotai-query-toolkit-0.0.2.tgz#5505cdad22a9f693cb4fddc18cf9cf75bc3673bc"
-  integrity sha512-N2U2GMW5j3ezbsulh24CObwCTfu6gVuIEtcLfwLZukCMEHYqZn98ee9WwXetCWs1k8xPNyP3umda5KTttsi/7g==
+jotai-query-toolkit@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/jotai-query-toolkit/-/jotai-query-toolkit-0.0.3.tgz#937a4410092772d094fcc13a347f6424e0c6cecd"
+  integrity sha512-HyQOOmgmbhyhWpI1EjrVcYiQwCRfLMJByB4JarWZVLtasaF27aXSl+QL2r9lpxnAVMiQ34rtKAFIgri6C4HzTQ==
   dependencies:
     fast-deep-equal "3.1.3"
 

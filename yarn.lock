@@ -1004,7 +1004,7 @@
     "@manypkg/get-packages" "^1.0.1"
     semver "^5.4.1"
 
-"@changesets/changelog-github@^0.4.0":
+"@changesets/changelog-github@0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/@changesets/changelog-github/-/changelog-github-0.4.0.tgz#ec80b18b9a5645191b5323fbddce4e4a012302d4"
   integrity sha512-4GphTAdHJfECuuQg4l0eFGYyUh26mfyXpAi2FImrQvaN+boqTM+9EAAJe2b8Y3OKRfoET+ihgo+LARhW2xJoiw==
@@ -1013,7 +1013,7 @@
     "@changesets/types" "^4.0.0"
     dotenv "^8.1.0"
 
-"@changesets/cli@^2.16.0":
+"@changesets/cli@2.16.0":
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/@changesets/cli/-/cli-2.16.0.tgz#9f794005d0503efba5e348b929821a1732fd0f0d"
   integrity sha512-VFkXSyyk/WRjjUoBI7g7cDy09qBjPbBQOloPMEshTzMo/NY9muWHl2yB/FSSkV/6PxGimPtJ7aEJPYfk8HCfXw==
@@ -5468,7 +5468,7 @@ jest@27.0.5:
     import-local "^3.0.2"
     jest-cli "^27.0.5"
 
-jotai@^1.1.0:
+jotai@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.1.0.tgz#a0f1afd15a187ab5578250d54a42bac999bfbaf9"
   integrity sha512-+c/bMxS/c1LgsOYVfevOYLAu+WEgn85TJhmBoNSNHjMV+mTKZY0ACSyCrX1yz8KialK4+Ggm6d7Ek3sTXy8UgA==
@@ -6180,7 +6180,7 @@ neo-async@^2.5.0, neo-async@^2.6.1:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-next@^11.0.1:
+next@11.0.1:
   version "11.0.1"
   resolved "https://registry.yarnpkg.com/next/-/next-11.0.1.tgz#b8e3914d153aaf7143cb98c09bcd3c8230eeb17a"
   integrity sha512-yR7be7asNbvpVNpi6xxEg28wZ7Gqmj1nOt0sABH9qORmF3+pms2KZ7Cng33oK5nqPIzEEFJD0pp2PCe3/ueMIg==
@@ -7031,7 +7031,7 @@ react-is@^16.8.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-query@^3.17.2:
+react-query@3.17.2:
   version "3.17.2"
   resolved "https://registry.yarnpkg.com/react-query/-/react-query-3.17.2.tgz#3ed5b0460a5a05332fbb175c36da55fb2d3ff929"
   integrity sha512-icMtYL/+jUv0Q3n8GRz6CTyMYKh+l5EBKwhkr8qhbtYRORr43YGiN6EJSyw9WFaSQ9bwD1G9ZhaFxow9NMV0Sw==
