@@ -1,7 +1,10 @@
 import { hashQueryKey, QueryKey } from 'react-query';
 import { queryClient } from '../query-client';
+import { NextPageContext } from 'next';
 
-export type Queries<Data> = [queryKey: QueryKey, fetcher: () => Promise<Data>];
+export type Fetcher<Data = any> = (ctx: NextPageContext) => Promise<Data>;
+export type Query = [queryKey: QueryKey, fetcher: Fetcher];
+export type Queries = Readonly<Query>[];
 
 /**
  * Get initial queries
@@ -23,21 +26,23 @@ export type Queries<Data> = [queryKey: QueryKey, fetcher: () => Promise<Data>];
  * }
  * ```
  * @param queries - {@link Queries} An array of QueryKey's and fetchers for the query.
+ * @param nextPageContext - {@link NextPageContext} optional next page context
  * @return Returns an object of the hashed query keys and data result from the fetcher associated with it, to be consumed by {@see useQueryInitialValues}
  */
 
-export async function getInitialPropsFromQueries<Data>(
-  queries: Readonly<Queries<Data>[]>
-): Promise<Record<string, Data>> {
+export async function getInitialPropsFromQueries(
+  queries: Queries,
+  nextPageContext: NextPageContext
+) {
   // let's extract only the query keys
   const queryKeys = queries.map(([queryKey]) => queryKey);
   // see if we have any cached in the query client
-  const data: Record<string, unknown> = getCachedQueryData(queryKeys) || {};
+  const data = getCachedQueryData(queryKeys) || {};
   const dataKeys = Object.keys(data);
   const hasCachedData = dataKeys.length > 0;
   const allArgsAreCached = dataKeys.length === queries.length;
   // everything is cached, let's return it now
-  if (allArgsAreCached) return data as Record<string, Data>;
+  if (allArgsAreCached) return data;
 
   // some or none of the args weren't available, as such we need to fetch them
   const results = await Promise.all(
@@ -46,16 +51,17 @@ export async function getInitialPropsFromQueries<Data>(
       .filter(([queryKey]) => (hasCachedData ? !!data[hashQueryKey(queryKey)] : true))
       // map through and fetch the data for each
       .map(async ([queryKey, fetcher]) => {
-        return [queryKey, await fetcher()] as [QueryKey, Data];
+        const value = await fetcher(nextPageContext);
+        return [queryKey, value] as [QueryKey, ReturnType<typeof value>];
       })
   );
 
   results.forEach(([queryKey, result]) => {
     // add them to the data object
-    data[hashQueryKey(queryKey)] = result;
+    data[hashQueryKey(queryKey as QueryKey)] = result;
   });
   // and return them!
-  return data as Record<string, Data>;
+  return data;
 }
 
 // this function gets the cache from our react-query queryClient
