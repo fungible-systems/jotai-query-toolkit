@@ -76,7 +76,8 @@ For data types that don't have unique parameters you need to fetch by, you can u
 very similar to the jotai exported `atomWithQuery` but with some opinionated defaults and better initialData handling.
 
 You can see a [demo here](https://jqt-vite.vercel.app/), and
-the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/vite-react-ts/src/App.tsx).
+the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/vite-react-ts/src/App.tsx)
+.
 
 ```typescript
 import {atomWithQueryRefresh} from "jotai-query-toolkit";
@@ -95,7 +96,8 @@ Next.js is a framework that makes using server side rendered react very easy. Fe
 that client state reflects that initial data is less easy. JQT hopes to make this experience much better.
 
 You can see a [demo here](https://jqt-next.vercel.app/), and
-the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/next-js/src/pages/index.tsx).
+the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/next-js/src/pages/index.tsx)
+.
 
 To get started, create a query key and an atom:
 
@@ -158,20 +160,51 @@ To fetch the data on the server, we'll use `getInitialProps` and from `getInitia
 from `jotai-query-toolkit`.
 
 ```ts
-MyHomePage.getInitialProps = async (_context: NextPageContext) => {
-  const queries = [
-    [
-      HomeQueryKeys.FooBar, // the query key we're using
-      async () => {
-        return `foo ${count} (initial data on the server, will update in 3 seconds)`;
-      }, // our fetcher for the server
-    ] as const,
-  ];
+// our queries
+const queries = [
+  [
+    HomeQueryKeys.FooBar, // the query key we're using
+    async (_context: NextPageContext) => { // all fetchers can make use of the NextPageContext
+      return `foo ${count} (initial data on the server, will update in 3 seconds)`;
+    }, // our fetcher for the server
+  ],
+];
 
-  return getInitialPropsFromQueries(queries); // returns Record<string, unknown>
+MyHomePage.getInitialProps = async (ctx: NextPageContext) => {
+  return getInitialPropsFromQueries(queries, ctx); // returns Record<string, unknown>
 };
 ```
 
 And there you have it! you'll automatically fetch the data on the server, and when the client hydrates, the atom will
 take over and automatically refresh every 3 seconds as we've defined above. If the user navigates to this page from a
 different page and there is data in the react-query cache, no additional fetching will occur.
+
+### HOC for next.js pages
+
+Above is the method you can use if you have more complex needs (such as queries that rely on one another). If you have
+less connected queries, you can opt for the higher order component that takes more complexity away. Let's modify the
+example above to use the `withInitialQueries` HOC:
+
+```tsx
+// the same queries as above
+const queries = [
+  [
+    HomeQueryKeys.FooBar, // the query key we're using
+    async (_context: NextPageContext) => {
+      return `foo ${count} (initial data on the server, will update in 3 seconds)`;
+    }, // our fetcher for the server
+  ],
+];
+// our next.js page component
+const MyHomePage = (props) => {
+  return (
+    <div style={{maxWidth: '900px', margin: '0 auto', textAlign: 'center'}}>
+      <h1>next.js jotai-query-toolkit</h1>
+      <FooBar/>
+    </div>
+  );
+};
+
+// wrap your page component with `withInitialQueries`, and pass your queries array to it.
+export default withInitialQueries(MyHomePage)(queries)
+```
