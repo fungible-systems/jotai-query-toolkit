@@ -20,5 +20,6 @@ export {
   getDataFromQueryArray,
   getInitialPropsFromQueries,
 } from './next-js/index';
+export { withInitialQueries } from './next-js/hoc';
 export { QueryProvider } from './next-js/query-provider';
 export type { Queries } from './next-js/index';
