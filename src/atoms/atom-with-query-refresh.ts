@@ -1,17 +1,11 @@
 import deepEqual from 'fast-deep-equal';
-import { atom, Getter } from 'jotai';
+import { atom } from 'jotai';
 import { atomWithQuery, queryClientAtom } from 'jotai/query';
-import { hashQueryKey, QueryKey, QueryObserverOptions } from 'react-query';
+import { hashQueryKey, QueryKey } from 'react-query';
 import { makeQueryKey } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
-
-export interface AtomWithQueryRefreshOptions<Data> extends QueryObserverOptions {
-  equalityFn?: (a: Data, b: Data) => boolean;
-  getShouldRefetch?: (initialData: Data) => boolean;
-}
-
-export type AtomWithQueryRefreshQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
+import { AtomWithQueryRefreshOptions, AtomWithQueryRefreshQueryFn } from './types';
 
 export const atomWithQueryRefresh = <Data>(
   key: string,
