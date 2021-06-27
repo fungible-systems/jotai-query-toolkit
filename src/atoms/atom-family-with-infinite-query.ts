@@ -1,5 +1,5 @@
 import { atomFamily, atomWithDefault } from 'jotai/utils';
-import { makeAtomFamilyWithQuery } from './utils';
+import { makeAtomFamilyWithQuery } from './utils/make-atom-family-with-query';
 import { atom } from 'jotai';
 import { queryClientAtom } from 'jotai/query';
 import { hashQueryKey, QueryClient } from 'react-query';
