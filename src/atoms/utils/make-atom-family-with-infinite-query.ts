@@ -7,20 +7,28 @@ import type {
   InfiniteQueryOptions,
   ParamWithListParams,
 } from '../types';
+import type { Scope } from 'jotai/core/atom';
+import type { QueryKey } from 'react-query';
 
-export const makeAtomFamilyWithInfiniteQuery = <Param, Data>(
-  queryKey: string,
+const fn = <Param, Data>(
+  queryKey: QueryKey,
   queryFn: AtomFamilyWithQueryFn<ParamWithListParams<Param>, Data>,
-  infiniteQueryOptions: InfiniteQueryOptions<Data>
-) => {
-  return memoize(
+  infiniteQueryOptions: InfiniteQueryOptions<Data>,
+  scope?: Scope
+) =>
+  memoize(
     (
       options: AtomWithQueryRefreshOptions<Data> & Partial<AtomFamilyWithInfiniteQuery<Data>> = {}
-    ) => {
-      return atomFamilyWithInfiniteQuery<Param, Data>(queryKey, queryFn, {
-        ...infiniteQueryOptions,
-        ...options,
-      });
-    }
+    ) =>
+      atomFamilyWithInfiniteQuery<Param, Data>(
+        queryKey,
+        queryFn,
+        {
+          ...options,
+          ...infiniteQueryOptions,
+        },
+        scope
+      )
   );
-};
+
+export const makeAtomFamilyWithInfiniteQuery = memoize(fn);
