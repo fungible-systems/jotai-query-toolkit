@@ -30,3 +30,5 @@ export function makeQueryKey<P>(key: QueryKey, param?: P): [QueryKey, P] | Query
   const flattenedParam = param ? (isFlattenable(param) ? (param as any).flat(100) : param) : null;
   return flattenedParam ? [flattenedKey, flattenedParam].flat(100) : flattenedKey;
 }
+
+export const queryKeyMap = new WeakMap();

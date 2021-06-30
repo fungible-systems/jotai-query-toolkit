@@ -1,116 +1,94 @@
-import { atomFamily, atomWithDefault } from 'jotai/utils';
-import { makeAtomFamilyWithQuery } from './utils/make-atom-family-with-query';
-import { atom, Getter } from 'jotai';
-import { queryClientAtom } from 'jotai/query';
-import { hashQueryKey, QueryClient, QueryKey } from 'react-query';
-import {
-  AtomFamilyWithInfiniteQuery,
-  AtomFamilyWithQueryFn,
-  InfiniteQueryDispatch,
-  ParamWithListParams,
-} from './types';
 import deepEqual from 'fast-deep-equal';
+import { atom, Getter, WritableAtom } from 'jotai';
+import {
+  atomWithInfiniteQuery,
+  AtomWithInfiniteQueryAction,
+  getQueryClientAtom,
+} from 'jotai/query';
+import { atomFamily } from 'jotai/utils';
+import { hashQueryKey, InfiniteData, QueryKey } from 'react-query';
+import { makeQueryKey, queryKeyMap } from '../utils';
+import { initialDataAtom } from './intitial-data-atom';
+import { IS_SSR, QueryRefreshRates } from '../constants';
+import { AtomFamily, AtomFamilyWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
 import { Scope } from 'jotai/core/atom';
-import { makeQueryKey } from '../utils';
-import mergeDeep from 'merge-deep';
 
-type Status = 'idle' | 'isFetching';
-const atomFamilyWithInfiniteQueryStatus = atomFamily<string, Status, Status>(_queryKey =>
-  atomWithDefault<Status>(() => 'idle')
-);
+function asInfiniteData<Data>(data: Data): InfiniteData<Data> {
+  if ('pages' in data && 'pageParams' in data) return data as unknown as InfiniteData<Data>;
+  return {
+    pages: [data],
+    pageParams: [undefined],
+  };
+}
+
 export const atomFamilyWithInfiniteQuery = <Param, Data>(
   key: QueryKey,
-  queryFn: AtomFamilyWithQueryFn<ParamWithListParams<Param>, Data>,
-  options: AtomFamilyWithInfiniteQuery<Data>,
+  queryFn: AtomFamilyWithInfiniteQueryFn<Param, Data>,
+  options: AtomWithInfiniteQueryOptions<Data> = {},
   scope?: Scope
-) => {
-  const { limit, getNextOffset, queryKeyAtom, ...rest } = options;
-  return atomFamily<Param, [Data[], Status], InfiniteQueryDispatch>(param => {
-    const queryParam = [param, { limit, offset: 0 }];
-    let queryKey = makeQueryKey(key, queryParam);
-    const hashedQueryKey = hashQueryKey(queryKey);
+): AtomFamily<Param, WritableAtom<InfiniteData<Data>, AtomWithInfiniteQueryAction>> => {
+  const {
+    equalityFn = deepEqual,
+    getShouldRefetch,
+    queryKeyAtom,
+    refetchInterval,
+    ...rest
+  } = options;
+
+  return atomFamily<Param, InfiniteData<Data>, AtomWithInfiniteQueryAction>(param => {
     const getQueryKey = (get: Getter) => {
-      if (queryKeyAtom)
-        queryKey = makeQueryKey(key, [param, { limit, offset: 0 }, get(queryKeyAtom)]);
+      if (queryKeyAtom) return makeQueryKey(key, [param, get(queryKeyAtom)]);
+      return makeQueryKey(key, param);
     };
+    const baseAtom = atom(get => {
+      const queryKey = getQueryKey(get);
+      const hashedQueryKey = hashQueryKey(queryKey);
+      const theInitialDataAtom = initialDataAtom(hashedQueryKey);
+      const initialData = asInfiniteData(get(theInitialDataAtom) as unknown as Data);
+      const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
+      const queryClient = get(getQueryClientAtom);
+      const defaultOptions = queryClient?.getDefaultOptions() || {};
+      const getRefreshInterval = () => {
+        return shouldRefresh
+          ? refetchInterval === false
+            ? false
+            : refetchInterval || QueryRefreshRates.Default
+          : false;
+      };
 
-    const paginatedDataAtomFamily = atomFamily<string, Data[], Data[]>(_queryKey =>
-      atomWithDefault<Data[]>(() => [])
-    );
+      const queryAtom = atomWithInfiniteQuery<Data, void, Data, Data>(
+        get => ({
+          queryKey,
+          queryFn: context => queryFn(get, param, context),
+          ...defaultOptions,
+          initialData,
+          refetchInterval: getRefreshInterval(),
+          ...(rest as any),
+        }),
+        equalityFn
+      );
+      queryAtom.debugLabel = `atomFamilyWithInfiniteQuery/queryAtom/${hashedQueryKey}`;
+      if (scope) queryAtom.scope = scope;
 
-    const statusAtom = atomFamilyWithInfiniteQueryStatus(hashedQueryKey);
-    const dataAtom = paginatedDataAtomFamily(hashedQueryKey);
-    let onSuccess = undefined;
-    const queryAtom = makeAtomFamilyWithQuery<[Param, { limit: number; offset: number }], Data>(
-      key,
-      queryFn,
-      queryKeyAtom,
-      scope
-    )({
-      // TODO: make it possible to revalidate Data[]
-      refetchInterval: false,
-      refetchOnReconnect: false,
-      refetchIntervalInBackground: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      ...rest,
+      return {
+        queryKey,
+        queryAtom,
+        initialData,
+      };
     });
+    if (scope) baseAtom.scope = scope;
 
-    const anAtom = atom<[Data[], Status], InfiniteQueryDispatch>(
+    const anAtom = atom<InfiniteData<Data>, AtomWithInfiniteQueryAction>(
       get => {
-        getQueryKey(get);
-        const status = get(statusAtom);
-        const data = get(dataAtom) as unknown as Data[];
-        return [data, status];
+        const { initialData, queryAtom, queryKey } = get(baseAtom);
+        queryKeyMap.set(anAtom, queryKey);
+        return IS_SSR ? initialData : get(queryAtom);
       },
-      async (
-        get,
-        set,
-        action: { type: 'mount' } | { type: 'next' } | { type: 'prev' } | { type: 'refresh' }
-      ) => {
-        const queryClient = get(queryClientAtom) || new QueryClient();
-
-        const currentData =
-          (get(paginatedDataAtomFamily(hashedQueryKey)) as unknown as Data[]) || [];
-        if (action.type === 'mount') {
-          queryClient.setQueryDefaults(queryKey, {
-            onSuccess: data => {
-              console.log('hello');
-              let [firstData, ...restData] = get(dataAtom);
-              const isDiff = deepEqual(data, firstData);
-              if (isDiff) {
-                const merged = mergeDeep(data, firstData);
-                set<Data[], Data[]>(dataAtom, [merged, ...restData]);
-              }
-            },
-          });
-          const data = await get(queryAtom(queryParam as any), true);
-
-          set<Data[], Data[]>(dataAtom, [...currentData, data]);
-          console.log(queryKey, hashedQueryKey);
-          console.log(queryClient.getQueryCache());
-        }
-        if (action.type === 'next') {
-          const offset = getNextOffset(currentData[currentData.length - 1], currentData);
-          if (offset === false) return;
-          set(statusAtom, 'isFetching');
-          queryClient
-            ?.fetchQuery(queryKey, () =>
-              queryFn(
-                get,
-                // updated query params here
-                [param, { limit, offset }]
-              )
-            )
-            .then(data => {
-              set<Data[], Data[]>(dataAtom, [...currentData, data]);
-              set(statusAtom, 'idle');
-            });
-        }
-      }
+      (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-    anAtom.onMount = setAtom => setAtom({ type: 'mount' });
+    anAtom.debugLabel = `atomFamilyWithInfiniteQuery/${hashQueryKey(param as unknown as QueryKey)}`;
     if (scope) anAtom.scope = scope;
+
     return anAtom;
   }, deepEqual);
 };

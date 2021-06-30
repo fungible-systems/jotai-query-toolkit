@@ -1,10 +1,37 @@
-import { hashQueryKey, QueryKey } from 'react-query';
-import { queryClient } from '../query-client';
-import { NextPageContext } from 'next';
+import { hashQueryKey, QueryClient, QueryKey } from 'react-query';
+import type { NextPageContext } from 'next';
 
-export type Fetcher<Data = any> = (ctx: NextPageContext) => Promise<Data>;
-export type Query = [queryKey: QueryKey, fetcher: Fetcher];
-export type Queries = Readonly<Query>[];
+type QueryPropsDefault = unknown | undefined;
+export type Fetcher<Data = any, QueryProps = QueryPropsDefault> = (
+  ctx: NextPageContext,
+  queryProps?: QueryProps
+) => Promise<Data> | Data;
+export type GetQueryKey<QueryProps = QueryPropsDefault> = (
+  ctx: NextPageContext,
+  queryProps?: QueryProps
+) => QueryKey | Promise<QueryKey | undefined> | undefined;
+export type Query<QueryProps = QueryPropsDefault> = [
+  queryKey: GetQueryKey<QueryProps> | QueryKey | undefined,
+  fetcher: Fetcher<any, QueryProps>
+];
+
+export type Queries<QueryProps = QueryPropsDefault> = Readonly<Query<QueryProps>>[];
+export type GetQueries<QueryProps = QueryPropsDefault> = (
+  ctx: NextPageContext,
+  queryProps?: QueryProps
+) => Queries<QueryProps> | Promise<Queries<QueryProps>>;
+
+export type QueryPropsGetter<QueryProps> = (
+  context: NextPageContext,
+  queryClient: QueryClient
+) => QueryProps | Promise<QueryProps>;
+
+interface GetInitialPropsFromQueriesOptions<QueryProps> {
+  getQueries: GetQueries<QueryProps> | Queries<QueryProps>;
+  ctx: NextPageContext;
+  getQueryProps?: QueryPropsGetter<QueryProps>;
+  queryClient: QueryClient;
+}
 
 /**
  * Get initial queries
@@ -25,60 +52,104 @@ export type Queries = Readonly<Query>[];
  *   return pageProps
  * }
  * ```
- * @param queries - {@link Queries} An array of QueryKey's and fetchers for the query.
- * @param nextPageContext - {@link NextPageContext} optional next page context
+ * @param options - {@link GetInitialPropsFromQueriesOptions} the object of options for this method
  * @return Returns an object of the hashed query keys and data result from the fetcher associated with it, to be consumed by {@see useQueryInitialValues}
  */
-
-export async function getInitialPropsFromQueries(
-  queries: Queries,
-  nextPageContext: NextPageContext
+export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>(
+  options: GetInitialPropsFromQueriesOptions<QueryProps>
 ) {
+  const { getQueries, ctx, getQueryProps, queryClient } = options;
+
+  const queryProps: QueryProps | undefined = getQueryProps
+    ? await getQueryProps(ctx, queryClient)
+    : undefined;
+
+  const getQueryKey = (queryKey: GetQueryKey<QueryProps> | QueryKey) => {
+    if (typeof queryKey === 'function') return queryKey(ctx, queryProps);
+    return queryKey;
+  };
+
+  const _queries =
+    typeof getQueries === 'function' ? await getQueries(ctx, queryProps) : getQueries;
+  const queries = (
+    await Promise.all(
+      _queries
+        .filter(([queryKey]) => queryKey)
+        .map(async ([queryKey, fetcher]) => [await getQueryKey(queryKey!), fetcher])
+    )
+  ).filter(([queryKey]) => queryKey) as [QueryKey, Fetcher<QueryProps>][];
   // let's extract only the query keys
   const queryKeys = queries.map(([queryKey]) => queryKey);
   // see if we have any cached in the query client
-  const data = getCachedQueryData(queryKeys) || {};
+  const data = getCachedQueryData(queryKeys, queryClient) || {};
   const dataKeys = Object.keys(data);
-  const hasCachedData = dataKeys.length > 0;
   const allArgsAreCached = dataKeys.length === queries.length;
   // everything is cached, let's return it now
   if (allArgsAreCached) return data;
-
   // some or none of the args weren't available, as such we need to fetch them
   const results = await Promise.all(
     queries
       // filter the items away that are already cached
-      .filter(([queryKey]) => (hasCachedData ? !!data[hashQueryKey(queryKey)] : true))
+      .filter(([queryKey]) => {
+        const valueExists = !!data[hashQueryKey(queryKey)];
+        return !valueExists;
+      })
       // map through and fetch the data for each
       .map(async ([queryKey, fetcher]) => {
-        const value = await fetcher(nextPageContext);
-        return [queryKey, value] as [QueryKey, ReturnType<typeof value>];
+        const value = await fetcher(ctx, queryProps);
+        return [queryKey, value] as [QueryKey, typeof value];
       })
   );
 
   results.forEach(([queryKey, result]) => {
     // add them to the data object
-    data[hashQueryKey(queryKey as QueryKey)] = result;
+    data[hashQueryKey(queryKey)] = result;
   });
   // and return them!
   return data;
 }
 
-// this function gets the cache from our react-query queryClient
-// and looks for any queries that might already be cached and returns them
-export function getCachedQueryData(queryKeys: QueryKey[]) {
-  const found: Record<string, any> = {};
+/**
+ * this function gets the QueryCache from our react-query queryClient
+ * and looks for a query that might already be cached and returns it
+ *
+ * @param queryKey - {@link QueryKey} the query key we're interested in
+ * @param queryClient - {@link QueryClient} the query client to check against
+ */
+export function getSingleCachedQueryData<Data = unknown>(
+  queryKey: QueryKey,
+  queryClient: QueryClient
+): Data | undefined {
   const cache = queryClient.getQueryCache();
   const queries = cache.getAll();
+  const hashedQueryKey = hashQueryKey(queryKey);
+  const match = queries.find(query => query.queryHash === hashedQueryKey);
+  if (match) return match?.state.data as Data;
+  return undefined;
+}
 
+/**
+ * this function gets the QueryCache from our react-query queryClient
+ * and looks for any of the queries passed that might already be cached and returns thems
+ *
+ * @param queryKeys - {@link QueryKey} the query key we're interested in
+ * @param queryClient - {@link QueryClient} the query client to check against
+ */
+export function getCachedQueryData(queryKeys: QueryKey[], queryClient: QueryClient) {
+  const found: Record<string, any> = {};
   queryKeys.forEach(queryKey => {
-    const match = queries.find(query => query.queryHash === hashQueryKey(queryKey));
-    if (match) found[hashQueryKey(queryKey)] = match.state.data;
+    const match = getSingleCachedQueryData(queryKey, queryClient);
+    if (match) found[hashQueryKey(queryKey)] = match;
   });
   if (Object.keys(found).length) return found;
 }
 
-// helper method to extract data from the fetchInitialQueries method
+/**
+ * Helper function to extract a query key's data from the response of {@link getInitialPropsFromQueries}
+ *
+ * @param queryKey - {@link QueryKey} the query key we're interested in
+ * @param queryArray - An object where each key is a hashed query key and the value is the data associated with it
+ */
 export function getDataFromQueryArray<Data>(
   queryKey: QueryKey,
   queryArray: Record<string, unknown>

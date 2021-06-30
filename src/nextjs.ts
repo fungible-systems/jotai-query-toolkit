@@ -4,9 +4,18 @@
 export {
   getCachedQueryData,
   getDataFromQueryArray,
+  getSingleCachedQueryData,
   getInitialPropsFromQueries,
 } from './nextjs/index';
+
+export { useQueryInitialValues } from './nextjs/hooks';
 export { withInitialQueries } from './nextjs/hoc';
-export { QueryProvider } from './nextjs/query-provider';
 export { IS_SSR } from './constants';
-export type { Queries } from './nextjs/index';
+export type {
+  QueryPropsGetter,
+  GetQueries,
+  Queries,
+  Fetcher,
+  GetQueryKey,
+  Query,
+} from './nextjs/index';

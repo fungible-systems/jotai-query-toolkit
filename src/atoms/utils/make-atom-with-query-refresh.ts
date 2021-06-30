@@ -3,9 +3,10 @@ import memoize from 'micro-memoize';
 import type { AtomWithQueryRefreshOptions, AtomWithQueryRefreshQueryFn } from '../types';
 import { atomWithQueryRefresh } from '../atom-with-query-refresh';
 import { Scope } from 'jotai/core/atom';
+import { QueryKey } from 'react-query';
 
 const fn = <Data>(
-  queryKey: string,
+  queryKey: QueryKey,
   queryFn: AtomWithQueryRefreshQueryFn<Data>,
   queryKeyAtom?: AtomWithQueryRefreshOptions<Data>['queryKeyAtom'],
   scope?: Scope

@@ -1,34 +1,32 @@
-import memoize from 'micro-memoize';
+import memoize, { MicroMemoize } from 'micro-memoize';
 import { atomFamilyWithInfiniteQuery } from '../atom-family-with-infinite-query';
 import type {
-  AtomFamilyWithInfiniteQuery,
-  AtomFamilyWithQueryFn,
-  AtomWithQueryRefreshOptions,
-  InfiniteQueryOptions,
-  ParamWithListParams,
+  AtomWithInfiniteQueryOptions,
+  AtomFamilyWithInfiniteQueryFn,
+  AtomFamily,
 } from '../types';
 import type { Scope } from 'jotai/core/atom';
-import type { QueryKey } from 'react-query';
+import type { InfiniteData, QueryKey } from 'react-query';
+import { AtomWithInfiniteQueryAction } from 'jotai/query';
+import { WritableAtom } from 'jotai';
 
-const fn = <Param, Data>(
+export const makeAtomFamilyWithInfiniteQuery = <Param, Data>(
   queryKey: QueryKey,
-  queryFn: AtomFamilyWithQueryFn<ParamWithListParams<Param>, Data>,
-  infiniteQueryOptions: InfiniteQueryOptions<Data>,
+  queryFn: AtomFamilyWithInfiniteQueryFn<Param, Data>,
+  defaultOptions: AtomWithInfiniteQueryOptions<Data> = {},
   scope?: Scope
 ) =>
   memoize(
     (
-      options: AtomWithQueryRefreshOptions<Data> & Partial<AtomFamilyWithInfiniteQuery<Data>> = {}
-    ) =>
+      options: AtomWithInfiniteQueryOptions<Data> = {}
+    ): AtomFamily<Param, WritableAtom<InfiniteData<Data>, AtomWithInfiniteQueryAction>> =>
       atomFamilyWithInfiniteQuery<Param, Data>(
         queryKey,
         queryFn,
         {
+          ...defaultOptions,
           ...options,
-          ...infiniteQueryOptions,
         },
         scope
       )
   );
-
-export const makeAtomFamilyWithInfiniteQuery = memoize(fn);

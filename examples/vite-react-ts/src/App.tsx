@@ -1,64 +1,90 @@
 import React from 'react';
 import { ReactQueryDevtools } from 'react-query/devtools';
 
-import { atomFamilyWithQuery } from 'jotai-query-toolkit';
-import { useAtomValue, useUpdateAtom } from 'jotai/utils';
-import toast, { Toaster } from 'react-hot-toast';
-import { atom, Provider, useAtom } from 'jotai';
-import { QueryClient, QueryClientProvider, QueryKey } from 'react-query';
-import { queryClientAtom } from 'jotai/query';
-import { Component } from './test';
+import { useAtomValue } from 'jotai/utils';
+import { Toaster } from 'react-hot-toast';
+import { Provider, useAtom } from 'jotai';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { atomWithQuery, queryClientAtom } from 'jotai/query';
+import {
+  atomFamilyWithInfiniteQuery,
+  queryKeyStatusAtom,
+  infiniteQueryKeyStatusAtom,
+  makeAtomFamilyWithInfiniteQuery,
+} from 'jotai-query-toolkit';
 
-let count = '0';
-let hasMounted = false;
-
-const oneMore = atom('hello again');
-const queryKeyAtom = atom<QueryKey>(async get => {
-  await new Promise(resolve => setTimeout(resolve, 2500));
-  return get(oneMore) + ' thing';
-});
-
-const myAtomFamilyAtom = atomFamilyWithQuery<string, string>(
-  'SOME_QUERY_KEY',
-  (_get, param) => {
-    if (hasMounted) {
-      const newCount = parseInt(count) + 3;
-      count = newCount.toString();
-    } else {
-      hasMounted = true;
-    }
-    return count;
+const makeAtom = makeAtomFamilyWithInfiniteQuery<string, { count: string }>(
+  'something-cool',
+  async (get, param, context) => {
+    await new Promise(resolve => setTimeout(resolve, 1250));
+    const { pageParam } = context;
+    return { count: pageParam || '0' };
   },
   {
-    keepPreviousData: false,
-    refetchInterval: 3000,
-    initialData: 'first render, 0',
-    onSuccess: data => {
-      toast(`Updated with new value: ${data}`);
+    getNextPageParam: lastPage => {
+      const { count } = lastPage;
+      if (parseInt(count) === 5) return undefined;
+      return (parseInt(count) + 1).toString();
     },
-    queryKeyAtom,
+    getPreviousPageParam: lastPage => {
+      const { count } = lastPage;
+      return (parseInt(count) - 1).toString();
+    },
   }
 );
 
-const Example = () => {
-  const value = useAtomValue(myAtomFamilyAtom('hello'));
-  return (
-    <div
-      style={{
-        margin: '72px auto',
-        maxWidth: '900px',
-        textAlign: 'center',
-      }}
-    >
-      <h1>Vite JQT example</h1>
-      <h2>{value}</h2>
-    </div>
-  );
-};
+const someAtom = atomFamilyWithInfiniteQuery<string, { count: string }>(
+  'some-family',
+  async (get, param, context) => {
+    await new Promise(resolve => setTimeout(resolve, 1250));
+    const { pageParam } = context;
+    return { count: pageParam || '0' };
+  },
+  {
+    getNextPageParam: lastPage => {
+      const { count } = lastPage;
+      if (parseInt(count) === 5) return undefined;
+      return (parseInt(count) + 1).toString();
+    },
+    getPreviousPageParam: lastPage => {
+      const { count } = lastPage;
+      return (parseInt(count) - 1).toString();
+    },
+  }
+);
 
-const Button = () => {
-  const [value, update] = useAtom(queryKeyAtom);
-  return <button onClick={() => update((parseInt(value) + 1).toString())}>update key</button>;
+const anotherAtom = atomWithQuery({
+  queryKey: 'test',
+  queryFn: () => {
+    return 'hello';
+  },
+  refetchInterval: 1500,
+  staleTime: 50,
+});
+
+const Comp = () => {
+  const theAtom = makeAtom()('test');
+  const [data, dispatch] = useAtom(theAtom);
+
+  const thing = useAtomValue(anotherAtom);
+  const status = useAtomValue(infiniteQueryKeyStatusAtom(['some-family', 'test']));
+  const status2 = useAtomValue(queryKeyStatusAtom(['test']));
+  const handleRefetch = () => dispatch({ type: 'refetch' });
+  const handleFetchNextPage = () => dispatch({ type: 'fetchNextPage' });
+  const handleFetchPreviousPage = () => dispatch({ type: 'fetchPreviousPage' });
+  return (
+    <>
+      <button onClick={() => handleRefetch()}>refetch</button>
+      <button onClick={() => handleFetchNextPage()}>next</button>
+      <button onClick={() => handleFetchPreviousPage()}>previous</button>
+      <div>{JSON.stringify(status2)}</div>
+      <div>
+        {data.pages.map(page => (
+          <div>count: {page.count}</div>
+        ))}
+      </div>
+    </>
+  );
 };
 
 const DevTools = () => {
@@ -76,7 +102,7 @@ function App() {
     <Provider initialValues={[[queryClientAtom, new QueryClient()] as const]}>
       <DevTools />
       <React.Suspense fallback={<>Loading...</>}>
-        <Component />
+        <Comp />
       </React.Suspense>
       <Toaster position="bottom-center" />
     </Provider>

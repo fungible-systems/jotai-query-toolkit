@@ -1,26 +1,43 @@
 import { NextPage, NextPageContext } from 'next';
-import React, { memo } from 'react';
+import React from 'react';
 import { getInitialPropsFromQueries, Queries } from './index';
-import { QueryProvider } from './query-provider';
 
-export function withInitialQueries<Props>(WrappedComponent: NextPage) {
-  return (queries: Queries) => {
-    if (!queries) throw Error('Need to pass queries');
-    const Wrapper: NextPage<any> = memo(({ initialQueryData, ...props }) => {
+import { Provider } from 'jotai';
+import { useQueryInitialValues } from './hooks';
+
+export function withInitialQueries<QueryProps = unknown, PageProps = Record<string, unknown>>(
+  WrappedComponent: NextPage<PageProps>
+) {
+  return (
+    getQueries:
+      | Queries<QueryProps>
+      | ((
+          ctx: NextPageContext,
+          queryProps?: QueryProps
+        ) => Queries<QueryProps> | Promise<Queries<QueryProps>>),
+    getQueryProps?: (context: NextPageContext) => QueryProps | Promise<QueryProps>
+  ): NextPage<PageProps> => {
+    if (!getQueries) throw Error('Need to pass queries');
+
+    const Wrapper: NextPage<{
+      initialQueryData: Record<string, unknown>;
+      initialValues?: any;
+    }> = ({ initialQueryData, initialValues, ...props }) => {
+      const initialQueries = useQueryInitialValues(initialQueryData);
       return (
-        <QueryProvider
-          queryKeys={queries.map(([queryKey]) => queryKey)}
-          initialQueryData={initialQueryData}
-        >
-          <WrappedComponent {...props} />
-        </QueryProvider>
+        <Provider initialValues={[...initialQueries].concat(initialValues ?? [])}>
+          <WrappedComponent {...(props as PageProps)} />
+        </Provider>
       );
-    });
+    };
 
     Wrapper.getInitialProps = async (ctx: NextPageContext) => {
-      const promises = [getInitialPropsFromQueries(queries, ctx)];
+      const promises = [
+        await getInitialPropsFromQueries<QueryProps>(getQueries, ctx, getQueryProps),
+      ];
       if (WrappedComponent.getInitialProps) {
-        const asyncGetInitialProps = async () => WrappedComponent?.getInitialProps?.(ctx) || {};
+        const asyncGetInitialProps = async () =>
+          (await WrappedComponent?.getInitialProps?.(ctx)) || {};
         promises.push(asyncGetInitialProps());
       }
 
@@ -29,6 +46,6 @@ export function withInitialQueries<Props>(WrappedComponent: NextPage) {
       return { initialQueryData, ...componentProps };
     };
 
-    return Wrapper;
+    return Wrapper as unknown as NextPage<PageProps>;
   };
 }
