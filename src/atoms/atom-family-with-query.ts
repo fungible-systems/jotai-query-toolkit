@@ -3,11 +3,12 @@ import { atom, Getter } from 'jotai';
 import { atomWithQuery, AtomWithQueryAction, getQueryClientAtom } from 'jotai/query';
 import { atomFamily } from 'jotai/utils';
 import { hashQueryKey, QueryKey } from 'react-query';
-import { makeQueryKey, queryKeyMap } from '../utils';
+import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomFamilyWithQueryFn, AtomWithQueryRefreshOptions } from './types';
 import { Scope } from 'jotai/core/atom';
+import { setWeakCacheItem } from '../cache';
 
 export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data>(
   key: QueryKey,
@@ -68,13 +69,13 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
     const anAtom = atom<Data, AtomWithQueryAction>(
       get => {
         const { initialData, queryAtom, queryKey } = get(baseAtom);
-        queryKeyMap.set(anAtom, queryKey);
+        const deps = [anAtom] as const;
+        setWeakCacheItem(queryKeyCache, deps, queryKey);
         return IS_SSR ? initialData : get(queryAtom);
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-
-    anAtom.debugLabel = `atomFamilyWithQuery/${hashQueryKey(param as unknown as QueryKey)}`;
+    anAtom.debugLabel = `atomFamilyWithQuery/${hashQueryKey(makeQueryKey(key, param))}`;
     if (scope) anAtom.scope = scope;
 
     return anAtom;

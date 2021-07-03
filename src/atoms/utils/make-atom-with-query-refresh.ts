@@ -1,7 +1,7 @@
 import memoize from 'micro-memoize';
 
 import type { AtomWithQueryRefreshOptions, AtomWithQueryRefreshQueryFn } from '../types';
-import { atomWithQueryRefresh } from '../atom-with-query-refresh';
+import { atomWithQuery } from '../atom-with-query-refresh';
 import { Scope } from 'jotai/core/atom';
 import { QueryKey } from 'react-query';
 
@@ -12,7 +12,7 @@ const fn = <Data>(
   scope?: Scope
 ) =>
   memoize((options: AtomWithQueryRefreshOptions<Data> = {}) =>
-    atomWithQueryRefresh<Data>(
+    atomWithQuery<Data>(
       queryKey,
       queryFn,
       {

@@ -27,7 +27,7 @@ export interface AtomWithInfiniteQueryOptions<Data>
 export type AtomWithQueryRefreshQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
 export type AtomWithInfiniteQueryFn<Data> = (
   get: Getter,
-  params: ListParams
+  context: QueryFunctionContext
 ) => Data | Promise<Data>;
 
 // export type AtomWithInfiniteQueryOptions<Data> = AtomWithQueryRefreshOptions<Data> &

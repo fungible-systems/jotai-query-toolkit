@@ -1,159 +1,86 @@
-import { atom, Getter, Setter } from 'jotai';
-import { atomFamily } from 'jotai/utils';
+import { atom } from 'jotai';
+import { atomFamily, atomWithDefault } from 'jotai/utils';
 import { getQueryClientAtom } from 'jotai/query';
 import {
   InfiniteQueryObserver,
   InfiniteQueryObserverResult,
+  InfiniteQueryObserverOptions,
   QueryKey,
-  QueryObserver,
-  QueryObserverResult,
 } from 'react-query';
 import deepEqual from 'fast-deep-equal';
-import { InfiniteQueryObserverOptions } from 'react-query/types/core/types';
 
-interface QueryStatus {
-  isSuccess?: boolean;
-  isFetching?: boolean;
-  isError?: boolean;
-  isIdle?: boolean;
-  isFetched?: boolean;
-  isLoadingError?: boolean;
-  isLoading?: boolean;
-  isPreviousData?: boolean;
-}
-
-export interface InfiniteQueryStatus extends QueryStatus {
+export interface InfiniteQueryStatus {
   isFetchingNextPage: boolean;
   isFetchingPreviousPage: boolean;
   hasPreviousPage?: boolean;
   hasNextPage?: boolean;
 }
 
+const statusAtomFamily = atomFamily<QueryKey, InfiniteQueryStatus, InfiniteQueryStatus>(
+  queryKey =>
+    atomWithDefault<InfiniteQueryStatus>(get => {
+      const observer = get(queryKeyObserver(queryKey));
+      const { isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
+        observer.getCurrentResult();
+      return {
+        isFetchingPreviousPage,
+        isFetchingNextPage,
+        hasNextPage,
+        hasPreviousPage,
+      };
+    }),
+  deepEqual
+);
+
+const queryKeyObserver = atomFamily<QueryKey, InfiniteQueryObserver>(
+  queryKey =>
+    atom(get => {
+      const queryClient = get(getQueryClientAtom);
+      const existing = queryClient.getQueryCache().find(queryKey);
+
+      const existingOptions = existing?.options || {
+        queryKey,
+      };
+      const defaultedOptions = queryClient.defaultQueryObserverOptions(existingOptions);
+      const observer = new InfiniteQueryObserver(
+        queryClient,
+        defaultedOptions as InfiniteQueryObserverOptions
+      );
+      return observer;
+    }),
+  deepEqual
+);
+
 export const infiniteQueryKeyStatusAtom = atomFamily<QueryKey, InfiniteQueryStatus>(queryKey => {
-  if (!queryKey) throw Error('No queryKey passed');
+  return atom<InfiniteQueryStatus>(get => {
+    if (!queryKey) throw Error('infiniteQueryKeyStatusAtom: no query key found');
 
-  const statusAtom = atom<InfiniteQueryStatus>({
-    isFetchingNextPage: false,
-    isFetchingPreviousPage: false,
+    const statusAtom = statusAtomFamily(queryKey);
+    const observer = get(queryKeyObserver(queryKey));
+
+    let setData: (data: any) => void = () => {
+      throw new Error('infiniteQueryKeyStatusAtom: setting data without mount');
+    };
+
+    const listener = ({
+      isFetchingPreviousPage,
+      isFetchingNextPage,
+      hasNextPage,
+      hasPreviousPage,
+    }: InfiniteQueryObserverResult) =>
+      setData({
+        isFetchingPreviousPage,
+        isFetchingNextPage,
+        hasNextPage,
+        hasPreviousPage,
+      });
+
+    statusAtom.onMount = update => {
+      setData = update;
+      const unsubscribe = observer.subscribe(listener);
+      return unsubscribe;
+    };
+
+    return get(statusAtom);
   });
-
-  let unsubscribe: () => void | undefined;
-
-  let observer: InfiniteQueryObserver | undefined;
-
-  const listener = (get: Getter, set: Setter) => (args: InfiniteQueryObserverResult) => {
-    const {
-      isSuccess,
-      isFetching,
-      isError,
-      isIdle,
-      isFetched,
-      isLoadingError,
-      isLoading,
-      isPreviousData,
-      isFetchingNextPage,
-      isFetchingPreviousPage,
-      hasPreviousPage,
-      hasNextPage,
-    } = args;
-    set(statusAtom, s => ({
-      isSuccess,
-      isFetching,
-      isError,
-      isIdle,
-      isFetched,
-      isLoadingError,
-      isLoading,
-      isPreviousData,
-      isFetchingNextPage,
-      isFetchingPreviousPage,
-      hasPreviousPage,
-      hasNextPage,
-    }));
-  };
-
-  const baseAtom = atom<InfiniteQueryStatus, { type: 'mount' }>(
-    get => get(statusAtom),
-    (get, set, action) => {
-      if (action.type === 'mount') {
-        const queryClient = get(getQueryClientAtom);
-        const existingOptions = queryClient.getQueryCache().find(queryKey)?.options || { queryKey };
-        const defaultedOptions =
-          get(getQueryClientAtom).defaultQueryObserverOptions(existingOptions);
-        if (!observer)
-          observer = new InfiniteQueryObserver(
-            get(getQueryClientAtom),
-            defaultedOptions as InfiniteQueryObserverOptions
-          );
-        unsubscribe = observer.subscribe(listener(get, set));
-      }
-    }
-  );
-
-  baseAtom.onMount = setAtom => {
-    setAtom({ type: 'mount' });
-
-    return () => {
-      unsubscribe?.();
-    };
-  };
-
-  return baseAtom;
-}, deepEqual);
-
-export const queryKeyStatusAtom = atomFamily<QueryKey, QueryStatus>(queryKey => {
-  if (!queryKey) throw Error('No queryKey passed');
-
-  const statusAtom = atom<QueryStatus>({});
-
-  let unsubscribe: () => void | undefined;
-
-  let observer: QueryObserver | undefined;
-
-  const listener = (get: Getter, set: Setter) => (args: QueryObserverResult) => {
-    const {
-      isSuccess,
-      isFetching,
-      isError,
-      isIdle,
-      isFetched,
-      isLoadingError,
-      isLoading,
-      isPreviousData,
-    } = args;
-    set(statusAtom, s => ({
-      isSuccess,
-      isFetching,
-      isError,
-      isIdle,
-      isFetched,
-      isLoadingError,
-      isLoading,
-      isPreviousData,
-    }));
-  };
-
-  const baseAtom = atom<QueryStatus, { type: 'mount' }>(
-    get => get(statusAtom),
-    (get, set, action) => {
-      if (action.type === 'mount') {
-        const queryClient = get(getQueryClientAtom);
-        const existingOptions = queryClient.getQueryCache().find(queryKey)?.options || { queryKey };
-        const defaultedOptions =
-          get(getQueryClientAtom).defaultQueryObserverOptions(existingOptions);
-        if (!observer) observer = new QueryObserver(get(getQueryClientAtom), defaultedOptions);
-        unsubscribe = observer.subscribe(listener(get, set));
-      }
-    }
-  );
-
-  baseAtom.onMount = setAtom => {
-    setAtom({ type: 'mount' });
-
-    return () => {
-      unsubscribe?.();
-    };
-  };
-
-  return baseAtom;
 }, deepEqual);

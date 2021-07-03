@@ -1,4 +1,4 @@
-import { QueryKey } from 'react-query';
+import type { QueryKey } from 'react-query';
 
 const spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined;
 
@@ -31,4 +31,4 @@ export function makeQueryKey<P>(key: QueryKey, param?: P): [QueryKey, P] | Query
   return flattenedParam ? [flattenedKey, flattenedParam].flat(100) : flattenedKey;
 }
 
-export const queryKeyMap = new WeakMap();
+export const queryKeyCache = new WeakMap();

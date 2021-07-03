@@ -7,14 +7,15 @@ import {
 } from 'jotai/query';
 import { atomFamily } from 'jotai/utils';
 import { hashQueryKey, InfiniteData, QueryKey } from 'react-query';
-import { makeQueryKey, queryKeyMap } from '../utils';
+import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomFamily, AtomFamilyWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
 import { Scope } from 'jotai/core/atom';
+import { setWeakCacheItem } from '../cache';
 
-function asInfiniteData<Data>(data: Data): InfiniteData<Data> {
-  if ('pages' in data && 'pageParams' in data) return data as unknown as InfiniteData<Data>;
+export function asInfiniteData<Data>(data: Data): InfiniteData<Data> {
+  if (data && 'pages' in data && 'pageParams' in data) return data as unknown as InfiniteData<Data>;
   return {
     pages: [data],
     pageParams: [undefined],
@@ -81,12 +82,13 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
     const anAtom = atom<InfiniteData<Data>, AtomWithInfiniteQueryAction>(
       get => {
         const { initialData, queryAtom, queryKey } = get(baseAtom);
-        queryKeyMap.set(anAtom, queryKey);
+        const deps = [anAtom] as const;
+        setWeakCacheItem(queryKeyCache, deps, queryKey);
         return IS_SSR ? initialData : get(queryAtom);
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-    anAtom.debugLabel = `atomFamilyWithInfiniteQuery/${hashQueryKey(param as unknown as QueryKey)}`;
+    anAtom.debugLabel = `atomFamilyWithInfiniteQuery/${hashQueryKey(makeQueryKey(key, param))}`;
     if (scope) anAtom.scope = scope;
 
     return anAtom;
