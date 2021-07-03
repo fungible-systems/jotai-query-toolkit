@@ -1,54 +1,83 @@
 import deepEqual from 'fast-deep-equal';
-import { atom } from 'jotai';
-import { atomWithQuery as _atomWithQuery, queryClientAtom } from 'jotai/query';
+import { atom, Getter } from 'jotai';
+import { atomWithQuery, AtomWithQueryAction, getQueryClientAtom } from 'jotai/query';
 import { atomFamily } from 'jotai/utils';
 import { hashQueryKey, QueryKey } from 'react-query';
-import { makeQueryKey } from '../utils';
+import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomFamilyWithQueryFn, AtomWithQueryRefreshOptions } from './types';
+import { Scope } from 'jotai/core/atom';
+import { setWeakCacheItem } from '../cache';
 
-export const atomFamilyWithQuery = <Param, Data>(
-  key: string,
+export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data>(
+  key: QueryKey,
   queryFn: AtomFamilyWithQueryFn<Param, Data>,
-  options: AtomWithQueryRefreshOptions<Data> = {}
+  options: AtomWithQueryRefreshOptions<Data> = {},
+  scope?: Scope
 ) => {
-  const { equalityFn = deepEqual, getShouldRefetch, refetchInterval, ...rest } = options;
-  let shouldRefresh = true;
+  const {
+    equalityFn = deepEqual,
+    getShouldRefetch,
+    queryKeyAtom,
+    refetchInterval,
+    ...rest
+  } = options;
+
   return atomFamily<Param, Data>(param => {
-    const queryKey = makeQueryKey(key, param);
-    const queryAtom = _atomWithQuery(get => {
-      const initialData = (get(initialDataAtom(queryKey)) as unknown as Data) || undefined;
-      if (getShouldRefetch && initialData) shouldRefresh = getShouldRefetch(initialData);
-      return {
+    const getQueryKey = (get: Getter) => {
+      if (queryKeyAtom) return makeQueryKey(key, [param, get(queryKeyAtom)]);
+      return makeQueryKey(key, param);
+    };
+    const baseAtom = atom(get => {
+      const queryKey = getQueryKey(get);
+      const hashedQueryKey = hashQueryKey(queryKey);
+      const theInitialDataAtom = initialDataAtom(hashedQueryKey);
+      const initialData = get(theInitialDataAtom) as unknown as Data;
+      const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
+      const queryClient = get(getQueryClientAtom);
+      const defaultOptions = queryClient?.getDefaultOptions() || {};
+      const getRefreshInterval = () => {
+        return shouldRefresh
+          ? refetchInterval === false
+            ? false
+            : refetchInterval || QueryRefreshRates.Default
+          : false;
+      };
+
+      const queryAtomOptions = (get: Getter) => ({
         queryKey,
         queryFn: () => queryFn(get, param),
+        ...defaultOptions,
         initialData,
-        keepPreviousData: true,
-        refetchInterval: shouldRefresh ? refetchInterval || QueryRefreshRates.Default : false,
-        ...rest,
-      } as any;
-    }, equalityFn);
-    queryAtom.debugLabel = `atomFamilyWithQuery/queryAtom/${hashQueryKey(queryKey as QueryKey)}`;
+        refetchInterval: getRefreshInterval(),
+        ...(rest as any),
+      });
 
-    const anAtom = atom(
+      const queryAtom = atomWithQuery<Data, void, Data, Data>(queryAtomOptions, equalityFn);
+      queryAtom.debugLabel = `atomFamilyWithQuery/queryAtom/${hashedQueryKey}`;
+      if (scope) queryAtom.scope = scope;
+
+      return {
+        queryKey,
+        queryAtom,
+        initialData,
+      };
+    });
+    if (scope) baseAtom.scope = scope;
+
+    const anAtom = atom<Data, AtomWithQueryAction>(
       get => {
-        const initialData = get(initialDataAtom(queryKey));
-        if (IS_SSR) {
-          return initialData as unknown as Data;
-        } else {
-          const queryData = get(queryAtom);
-          return (queryData || initialData) as Data;
-        }
+        const { initialData, queryAtom, queryKey } = get(baseAtom);
+        const deps = [anAtom] as const;
+        setWeakCacheItem(queryKeyCache, deps, queryKey);
+        return IS_SSR ? initialData : get(queryAtom);
       },
-      async get => {
-        const queryClient = get(queryClientAtom);
-        await queryClient?.refetchQueries({
-          queryKey,
-        });
-      }
+      (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-    anAtom.debugLabel = `atomFamilyWithQuery/${hashQueryKey(queryKey as QueryKey)}`;
+    anAtom.debugLabel = `atomFamilyWithQuery/${hashQueryKey(makeQueryKey(key, param))}`;
+    if (scope) anAtom.scope = scope;
+
     return anAtom;
   }, deepEqual);
 };

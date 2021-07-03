@@ -1,20 +1,37 @@
-import { QueryObserverOptions } from 'react-query';
-import { Getter } from 'jotai';
+import {
+  InfiniteData,
+  InfiniteQueryObserverOptions,
+  QueryFunctionContext,
+  QueryKey,
+  QueryObserverOptions,
+} from 'react-query';
+import { Atom, Getter, PrimitiveAtom } from 'jotai';
+import { AtomWithInfiniteQueryOptions as _AtomWithInfiniteQueryOptions } from 'jotai/query';
 
-export interface AtomWithQueryRefreshOptions<Data> extends QueryObserverOptions<Data, void, Data> {
+export interface BaseQueryAtomCustomOptions<Data> {
   equalityFn?: (a: Data, b: Data) => boolean;
+  queryKeyAtom?: Atom<QueryKey> | PrimitiveAtom<QueryKey>;
   getShouldRefetch?: (initialData: Data) => boolean;
 }
 
-export type AtomWithQueryRefreshQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
+export type AtomWithQueryRefreshOptions<Data> = QueryObserverOptions<Data, void, Data> &
+  BaseQueryAtomCustomOptions<Data>;
 
-export interface InfiniteQueryOptions<Data> {
-  limit: number;
-  getNextOffset: (data: Data, allPages: Data[]) => number | false;
+export interface AtomWithInfiniteQueryOptions<Data>
+  extends InfiniteQueryObserverOptions<Data, unknown, Data, Data> {
+  equalityFn?: (a: InfiniteData<Data>, b: InfiniteData<Data>) => boolean;
+  getShouldRefetch?: (initialData: InfiniteData<Data>) => boolean;
+  queryKeyAtom?: Atom<QueryKey> | PrimitiveAtom<QueryKey>;
 }
 
-export type AtomFamilyWithInfiniteQuery<Data> = AtomWithQueryRefreshOptions<Data> &
-  InfiniteQueryOptions<Data>;
+export type AtomWithQueryRefreshQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
+export type AtomWithInfiniteQueryFn<Data> = (
+  get: Getter,
+  context: QueryFunctionContext
+) => Data | Promise<Data>;
+
+// export type AtomWithInfiniteQueryOptions<Data> = AtomWithQueryRefreshOptions<Data> &
+//   InfiniteQueryOptions<Data>;
 
 export type InfiniteQueryDispatch =
   | { type: 'mount' }
@@ -33,3 +50,17 @@ export type AtomFamilyWithQueryFn<Param, Data> = (
   get: Getter,
   param: Param
 ) => Data | Promise<Data>;
+
+export type AtomFamilyWithInfiniteQueryFn<Param, Data> = (
+  get: Getter,
+  param: Param,
+  context: QueryFunctionContext
+) => Data | Promise<Data>;
+
+type ShouldRemove<Param> = (createdAt: number, param: Param) => boolean;
+
+export type AtomFamily<Param, AtomType> = {
+  (param: Param): AtomType;
+  remove(param: Param): void;
+  setShouldRemove(shouldRemove: ShouldRemove<Param> | null): void;
+};

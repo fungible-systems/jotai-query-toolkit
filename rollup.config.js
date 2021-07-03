@@ -59,7 +59,7 @@ function createESMConfig(input, output) {
     external,
     plugins: [
       resolve({ extensions }),
-      getEsbuild('node12'),
+      getEsbuild('node14'),
       sizeSnapshot({ snapshotPath: '.size-snapshot.esm.json' }),
     ],
   };

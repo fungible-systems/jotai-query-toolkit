@@ -1,11 +1,7 @@
-import { useMemo } from 'react';
-import { hashQueryKey } from 'react-query';
-import type { QueryClient, QueryKey } from 'react-query';
 import type { Atom } from 'jotai';
 import { queryClientAtom } from 'jotai/query';
-
-import { initialDataAtom } from '../atoms/intitial-data-atom';
 import { queryClient } from '../query-client';
+import { initialDataAtom } from '../atoms/intitial-data-atom';
 
 /**
  * useQueryInitialValues
@@ -18,23 +14,17 @@ import { queryClient } from '../query-client';
  * const initialValues = useQueryInitialValues(queryKeys, props);
  * ```
  *
- * @param queryKeys - an array of react-query query keys.
  * @param props - the data generated from {@link getOrFetchInitialQueries}, should not be created manually.
- * @param customQueryClient - an optional query client that will be automatically used in all queries under the Jotai <Provider> these initial values are passed to.
  */
-export function useQueryInitialValues(
-  queryKeys: QueryKey[],
-  props: Record<string, unknown>,
-  customQueryClient?: QueryClient
-) {
-  return useMemo(
-    () =>
-      [
-        ...queryKeys.map(
-          queryKey => [initialDataAtom(queryKey), props[hashQueryKey(queryKey)]] as const
-        ),
-        [queryClientAtom, customQueryClient || queryClient] as const,
-      ] as Iterable<readonly [Atom<unknown>, unknown]>,
-    [queryKeys, props]
-  );
+export function useQueryInitialValues(props: Record<string, unknown>) {
+  const queryKeys = Object.keys(props);
+  const atoms = queryKeys.map(queryKey => {
+    const value = props[queryKey];
+    if (!value)
+      throw Error('[Jotai Query Toolkit] no initial data found for ${hashQueryKey(queryKey)}');
+    return [initialDataAtom(queryKey), value] as const;
+  });
+  return [[queryClientAtom, queryClient] as const, ...atoms] as Iterable<
+    readonly [Atom<unknown>, unknown]
+  >;
 }
