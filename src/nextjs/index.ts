@@ -4,11 +4,13 @@ import type { NextPageContext } from 'next';
 type QueryPropsDefault = unknown | undefined;
 export type Fetcher<Data = any, QueryProps = QueryPropsDefault> = (
   ctx: NextPageContext,
-  queryProps?: QueryProps
+  queryProps?: QueryProps,
+  queryClient?: QueryClient
 ) => Promise<Data> | Data;
 export type GetQueryKey<QueryProps = QueryPropsDefault> = (
   ctx: NextPageContext,
-  queryProps?: QueryProps
+  queryProps?: QueryProps,
+  queryClient?: QueryClient
 ) => QueryKey | Promise<QueryKey | undefined> | undefined;
 export type Query<QueryProps = QueryPropsDefault> = [
   queryKey: GetQueryKey<QueryProps> | QueryKey | undefined,
@@ -18,7 +20,8 @@ export type Query<QueryProps = QueryPropsDefault> = [
 export type Queries<QueryProps = QueryPropsDefault> = Readonly<Query<QueryProps>>[];
 export type GetQueries<QueryProps = QueryPropsDefault> = (
   ctx: NextPageContext,
-  queryProps?: QueryProps
+  queryProps?: QueryProps,
+  queryClient?: QueryClient
 ) => Queries<QueryProps> | Promise<Queries<QueryProps>>;
 
 export type QueryPropsGetter<QueryProps> = (
@@ -65,12 +68,12 @@ export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>
     : undefined;
 
   const getQueryKey = (queryKey: GetQueryKey<QueryProps> | QueryKey) => {
-    if (typeof queryKey === 'function') return queryKey(ctx, queryProps);
+    if (typeof queryKey === 'function') return queryKey(ctx, queryProps, queryClient);
     return queryKey;
   };
 
   const _queries =
-    typeof getQueries === 'function' ? await getQueries(ctx, queryProps) : getQueries;
+    typeof getQueries === 'function' ? await getQueries(ctx, queryProps, queryClient) : getQueries;
   const queries = (
     await Promise.all(
       _queries
@@ -96,7 +99,7 @@ export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>
       })
       // map through and fetch the data for each
       .map(async ([queryKey, fetcher]) => {
-        const value = await fetcher(ctx, queryProps);
+        const value = await fetcher(ctx, queryProps, queryClient);
         return [queryKey, value] as [QueryKey, typeof value];
       })
   );

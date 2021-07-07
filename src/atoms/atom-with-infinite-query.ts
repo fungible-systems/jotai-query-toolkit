@@ -25,6 +25,9 @@ export const atomWithInfiniteQuery = <Data>(
     getShouldRefetch,
     queryKeyAtom,
     refetchInterval,
+    refetchOnMount = false,
+    refetchOnWindowFocus = false,
+    refetchOnReconnect = false,
     ...rest
   } = options;
 
@@ -55,8 +58,11 @@ export const atomWithInfiniteQuery = <Data>(
         queryFn: context => queryFn(get, context),
         ...defaultOptions,
         initialData,
-        refetchInterval: getRefreshInterval(),
         ...(rest as any),
+        refetchInterval: getRefreshInterval(),
+        refetchOnMount: shouldRefresh ? refetchOnMount : false,
+        refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
+        refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
       }),
       equalityFn
     );

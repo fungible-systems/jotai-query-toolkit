@@ -2,12 +2,12 @@ import { useCallback, useMemo } from 'react';
 import { atom } from 'jotai';
 import { useAtomCallback, useAtomValue } from 'jotai/utils';
 
-import { infiniteQueryKeyStatusAtom } from '../atoms/query-key-status-atom';
+import { infiniteQueryKeyStatusAtom } from '../atoms/react-query/infinite-query-key-status-atom';
 import { queryKeyCache } from '../utils';
 import { getWeakCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
-import type { InfiniteQueryStatus } from '../atoms/query-key-status-atom';
+import type { InfiniteQueryStatus } from '../atoms/react-query/infinite-query-key-status-atom';
 import type { QueryKey } from 'react-query';
 import type { AtomWithInfiniteQueryAction } from 'jotai/query';
 
@@ -18,13 +18,13 @@ const conditionalQueryKeyAtom = (queryKey: QueryKey | undefined) => {
   return infiniteQueryKeyStatusAtom(queryKey);
 };
 
-interface BaseExtras {
+export interface BaseExtras {
   fetchNextPage: () => void;
   fetchPreviousPage: () => void;
   refetch: () => void;
 }
 
-interface OptionalStatus extends BaseExtras {
+export interface OptionalStatus extends BaseExtras {
   isFetchingPreviousPage: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;

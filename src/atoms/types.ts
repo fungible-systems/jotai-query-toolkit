@@ -6,7 +6,6 @@ import {
   QueryObserverOptions,
 } from 'react-query';
 import { Atom, Getter, PrimitiveAtom } from 'jotai';
-import { AtomWithInfiniteQueryOptions as _AtomWithInfiniteQueryOptions } from 'jotai/query';
 
 export interface BaseQueryAtomCustomOptions<Data> {
   equalityFn?: (a: Data, b: Data) => boolean;
@@ -24,14 +23,11 @@ export interface AtomWithInfiniteQueryOptions<Data>
   queryKeyAtom?: Atom<QueryKey> | PrimitiveAtom<QueryKey>;
 }
 
-export type AtomWithQueryRefreshQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
+export type AtomWithQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
 export type AtomWithInfiniteQueryFn<Data> = (
   get: Getter,
   context: QueryFunctionContext
 ) => Data | Promise<Data>;
-
-// export type AtomWithInfiniteQueryOptions<Data> = AtomWithQueryRefreshOptions<Data> &
-//   InfiniteQueryOptions<Data>;
 
 export type InfiniteQueryDispatch =
   | { type: 'mount' }

@@ -13,6 +13,7 @@ import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomFamily, AtomFamilyWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
 import { Scope } from 'jotai/core/atom';
 import { setWeakCacheItem } from '../cache';
+import { getScope } from './utils/set-global-scope';
 
 export function asInfiniteData<Data>(data: Data): InfiniteData<Data> {
   if (data && 'pages' in data && 'pageParams' in data) return data as unknown as InfiniteData<Data>;
@@ -28,15 +29,18 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
   options: AtomWithInfiniteQueryOptions<Data> = {},
   scope?: Scope
 ): AtomFamily<Param, WritableAtom<InfiniteData<Data>, AtomWithInfiniteQueryAction>> => {
-  const {
-    equalityFn = deepEqual,
-    getShouldRefetch,
-    queryKeyAtom,
-    refetchInterval,
-    ...rest
-  } = options;
-
   return atomFamily<Param, InfiniteData<Data>, AtomWithInfiniteQueryAction>(param => {
+    const {
+      equalityFn = deepEqual,
+      getShouldRefetch,
+      queryKeyAtom,
+      refetchInterval,
+      refetchOnMount = false,
+      refetchOnWindowFocus = false,
+      refetchOnReconnect = false,
+      ...rest
+    } = options;
+
     const getQueryKey = (get: Getter) => {
       if (queryKeyAtom) return makeQueryKey(key, [param, get(queryKeyAtom)]);
       return makeQueryKey(key, param);
@@ -63,8 +67,11 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
           queryFn: context => queryFn(get, param, context),
           ...defaultOptions,
           initialData,
-          refetchInterval: getRefreshInterval(),
           ...(rest as any),
+          refetchInterval: getRefreshInterval(),
+          refetchOnMount: shouldRefresh ? refetchOnMount : false,
+          refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
+          refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
         }),
         equalityFn
       );

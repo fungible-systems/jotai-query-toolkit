@@ -1,4 +1,3 @@
-import memoize from 'micro-memoize';
 import { atomFamilyWithInfiniteQuery } from '../atom-family-with-infinite-query';
 import type {
   AtomWithInfiniteQueryOptions,
@@ -9,9 +8,6 @@ import type { Scope } from 'jotai/core/atom';
 import type { InfiniteData, QueryKey } from 'react-query';
 import { AtomWithInfiniteQueryAction } from 'jotai/query';
 import { WritableAtom } from 'jotai';
-import { getWeakCacheItem, setWeakCacheItem } from './weak-cache';
-
-const atomFamilyWithInfiniteQueryCache = new WeakMap();
 
 interface MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>
   extends Omit<AtomWithInfiniteQueryOptions<Data>, 'queryFn'> {
@@ -20,14 +16,23 @@ interface MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>
   scope?: Scope;
 }
 
-export const makeAtomFamilyWithInfiniteQuery = <Param, Data>(
-  initOptions: MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>
-) => {
-  return (
-    options: AtomWithInfiniteQueryOptions<Data> = {}
-  ): AtomFamily<Param, WritableAtom<InfiniteData<Data>, AtomWithInfiniteQueryAction>> => {
+const cache = new WeakMap();
+type InitOptions<Param, Data> = MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>;
+type Options<Data> = Omit<AtomWithInfiniteQueryOptions<Data>, 'queryKey' | 'queryFn'>;
+type Return<Param, Data> = AtomFamily<
+  Param,
+  WritableAtom<InfiniteData<Data>, AtomWithInfiniteQueryAction>
+>;
+
+export const makeAtomFamilyWithInfiniteQuery =
+  <Param, Data>(initOptions: InitOptions<Param, Data>) =>
+  (options: Options<Data> = {}): Return<Param, Data> => {
+    const deps = [initOptions, options] as const;
+    if (cache.has(deps)) {
+      return cache.get(deps);
+    }
     const { queryFn, queryKey, scope, ...defaultOptions } = initOptions;
-    return atomFamilyWithInfiniteQuery<Param, Data>(
+    const anAtom = atomFamilyWithInfiniteQuery<Param, Data>(
       queryKey,
       queryFn,
       {
@@ -36,5 +41,6 @@ export const makeAtomFamilyWithInfiniteQuery = <Param, Data>(
       },
       scope
     );
+    cache.set(deps, anAtom);
+    return anAtom;
   };
-};

@@ -1,13 +1,8 @@
 import { atom } from 'jotai';
 import { atomFamily, atomWithDefault } from 'jotai/utils';
-import { getQueryClientAtom } from 'jotai/query';
-import {
-  InfiniteQueryObserver,
-  InfiniteQueryObserverResult,
-  InfiniteQueryObserverOptions,
-  QueryKey,
-} from 'react-query';
+import { InfiniteQueryObserverResult, QueryKey } from 'react-query';
 import deepEqual from 'fast-deep-equal';
+import { infiniteQueryKeyObserver } from './infinite-query-key-observer';
 
 export interface InfiniteQueryStatus {
   isFetchingNextPage: boolean;
@@ -16,10 +11,14 @@ export interface InfiniteQueryStatus {
   hasNextPage?: boolean;
 }
 
-const statusAtomFamily = atomFamily<QueryKey, InfiniteQueryStatus, InfiniteQueryStatus>(
+export const infiniteStatusAtomFamily = atomFamily<
+  QueryKey,
+  InfiniteQueryStatus,
+  InfiniteQueryStatus
+>(
   queryKey =>
     atomWithDefault<InfiniteQueryStatus>(get => {
-      const observer = get(queryKeyObserver(queryKey));
+      const observer = get(infiniteQueryKeyObserver(queryKey));
       const { isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
         observer.getCurrentResult();
       return {
@@ -32,31 +31,12 @@ const statusAtomFamily = atomFamily<QueryKey, InfiniteQueryStatus, InfiniteQuery
   deepEqual
 );
 
-const queryKeyObserver = atomFamily<QueryKey, InfiniteQueryObserver>(
-  queryKey =>
-    atom(get => {
-      const queryClient = get(getQueryClientAtom);
-      const existing = queryClient.getQueryCache().find(queryKey);
-
-      const existingOptions = existing?.options || {
-        queryKey,
-      };
-      const defaultedOptions = queryClient.defaultQueryObserverOptions(existingOptions);
-      const observer = new InfiniteQueryObserver(
-        queryClient,
-        defaultedOptions as InfiniteQueryObserverOptions
-      );
-      return observer;
-    }),
-  deepEqual
-);
-
 export const infiniteQueryKeyStatusAtom = atomFamily<QueryKey, InfiniteQueryStatus>(queryKey => {
   return atom<InfiniteQueryStatus>(get => {
     if (!queryKey) throw Error('infiniteQueryKeyStatusAtom: no query key found');
 
-    const statusAtom = statusAtomFamily(queryKey);
-    const observer = get(queryKeyObserver(queryKey));
+    const statusAtom = infiniteStatusAtomFamily(queryKey);
+    const observer = get(infiniteQueryKeyObserver(queryKey));
 
     let setData: (data: any) => void = () => {
       throw new Error('infiniteQueryKeyStatusAtom: setting data without mount');
