@@ -9,13 +9,13 @@ import { hashQueryKey, QueryKey } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
-import { AtomWithQueryRefreshOptions, AtomWithQueryRefreshQueryFn } from './types';
+import { AtomWithQueryRefreshOptions, AtomWithQueryFn } from './types';
 import { Scope } from 'jotai/core/atom';
 import { setWeakCacheItem } from '../cache';
 
 export const atomWithQuery = <Data>(
   key: QueryKey,
-  queryFn: AtomWithQueryRefreshQueryFn<Data>,
+  queryFn: AtomWithQueryFn<Data>,
   options: AtomWithQueryRefreshOptions<Data> = {},
   scope?: Scope
 ) => {
@@ -24,9 +24,11 @@ export const atomWithQuery = <Data>(
     getShouldRefetch,
     queryKeyAtom,
     refetchInterval,
+    refetchOnMount = false,
+    refetchOnWindowFocus = false,
+    refetchOnReconnect = false,
     ...rest
   } = options;
-
   const getQueryKey = (get: Getter) => {
     if (queryKeyAtom) return makeQueryKey(key, get(queryKeyAtom));
     return makeQueryKey(key);
@@ -54,8 +56,11 @@ export const atomWithQuery = <Data>(
         queryFn: () => queryFn(get),
         ...defaultOptions,
         initialData,
-        refetchInterval: getRefreshInterval(),
         ...(rest as any),
+        refetchInterval: getRefreshInterval(),
+        refetchOnMount: shouldRefresh ? refetchOnMount : false,
+        refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
+        refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
       }),
       equalityFn
     );

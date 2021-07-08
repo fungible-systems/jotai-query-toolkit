@@ -5,14 +5,7 @@ export const queryClient = new QueryClient({
     // @see https://github.com/tannerlinsley/react-query/discussions/1601
     // @see https://react-query.tanstack.com/guides/migrating-to-react-query-3#the-queryoptionsnotifyonstatuschange-option-has-been-superceded-by-the-new-notifyonchangeprops-and-notifyonchangepropsexclusions-options
     queries: {
-      notifyOnChangeProps: [
-        'isFetchingNextPage',
-        'isFetchingPreviousPage',
-        'hasNextPage',
-        'hasPreviousPage',
-        'data',
-        'error',
-      ],
+      notifyOnChangeProps: ['data', 'error'],
     },
   },
 });
