@@ -70,23 +70,19 @@ const Component = () => {
 }
 ```
 
-### atomWithQueryRefresh
+### atomWithQuery
 
-For data types that don't have unique parameters you need to fetch by, you can use the `atomWithQueryRefresh`, which is
-very similar to the jotai exported `atomWithQuery` but with some opinionated defaults and better initialData handling.
+Note: This is an opinionated wrapper around `atomWithQuery` that is exported by jotai. 
 
-You can see a [demo here](https://jqt-vite.vercel.app/), and
-the [code that powers it here](https://github.com/fungible-systems/jotai-query-toolkit/blob/main/examples/vite-react-ts/src/App.tsx)
-.
+For data types that don't have unique parameters you need to fetch by, you can use the `atomWithQuery`.
 
 ```typescript
-import {atomWithQueryRefresh} from "jotai-query-toolkit";
+import {atomWithQuery} from "jotai-query-toolkit";
 
-const fooBarAtom = atomWithQueryRefresh<string>(MyQueryKeys.FooBar, async (get) => {
+const fooBarAtom = atomWithQuery<string>(MyQueryKeys.FooBar, async (get) => {
   const anotherAtomValue = get(anotherAtom);
   // this could be to fetch a list of all users
-  const remoteData = await fetchRemoteDate(anotherAtomValue);
-  return remoteData;
+  return fetchRemoteDate(anotherAtomValue);
 })
 ```
 
@@ -115,14 +111,14 @@ let count = 0;
 let hasMounted = false;
 
 // our atomWithQueryRefresh
-const fooBarAtom = atomWithQueryRefresh(
+const fooBarAtom = atomWithQuery(
   HomeQueryKeys.FooBar, // our QueryKey
   () => {
     if (hasMounted) count += 3;
     if (!hasMounted) hasMounted = true;
     return `bar ${count} (client rendered, updates every 3 seconds)`;
   },
-  {refetchInterval: 3000} // some extra queryClient options can be passed here
+  {refetchInterval: 3000} // extra queryClient options can be passed here
 );
 ```
 
@@ -180,7 +176,7 @@ MyHomePage.getInitialProps = async (ctx: NextPageContext) => {
 };
 ```
 
-And there you have it! you'll automatically fetch the data on the server, and when the client hydrates, the atom will
+There you have it! you'll automatically fetch the data on the server, and when the client hydrates, the atom will
 take over and automatically refresh every 3 seconds as we've defined above. If the user navigates to this page from a
 different page and there is data in the react-query cache, no additional fetching will occur.
 
@@ -191,13 +187,13 @@ less connected queries, you can opt for the higher order component that takes mo
 example above to use the `withInitialQueries` HOC:
 
 ```tsx
-import { withInitialQueries } from 'jotai-query-toolkit/nextjs'
+import {withInitialQueries, GetQueries} from 'jotai-query-toolkit/nextjs'
 
 // the same queries as above
-const queries = [
+const getQueries: GetQueries = (ctx: NextPageContext) => [
   [
     HomeQueryKeys.FooBar, // the query key we're using
-    async (_context: NextPageContext) => {
+    async () => {
       return `foo ${count} (initial data on the server, will update in 3 seconds)`;
     }, // our fetcher for the server
   ],
@@ -213,5 +209,5 @@ const MyHomePage = (props) => {
 };
 
 // wrap your page component with `withInitialQueries`, and pass your queries array to it.
-export default withInitialQueries(MyHomePage)(queries)
+export default withInitialQueries(MyHomePage)(getQueries)
 ```
