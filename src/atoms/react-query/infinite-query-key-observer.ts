@@ -14,8 +14,6 @@ export const infiniteQueryKeyObserver = atomFamily<QueryKey, InfiniteQueryObserv
       const defaultedOptions = queryClient.defaultQueryObserverOptions({
         ...options,
         notifyOnChangeProps: [
-          'data',
-          'error',
           'isFetchingPreviousPage',
           'isFetchingNextPage',
           'hasNextPage',

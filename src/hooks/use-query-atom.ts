@@ -39,7 +39,6 @@ export function useQueryAtom<T>(anAtom: WritableAtom<T, AtomWithQueryAction>): [
   const refetch = useAtomCallback(
     useCallback(
       async (get, set) => {
-        console.log('refetching', queryKey);
         const observer = get(queryKeyObserver(queryKey));
         await observer.refetch();
       },

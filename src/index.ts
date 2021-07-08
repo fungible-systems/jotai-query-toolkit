@@ -39,5 +39,5 @@ export type {
 //---------------------
 export { queryClient } from './query-client';
 export { makeQueryKey, queryKeyCache } from './utils';
-export { QueryRefreshRates } from './constants';
+export { QueryRefreshRates, IS_SSR } from './constants';
 export { setScope, SCOPE_CACHE_KEY, cache, getScope } from './atoms/utils/set-global-scope';

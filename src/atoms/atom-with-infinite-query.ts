@@ -78,7 +78,7 @@ export const atomWithInfiniteQuery = <Data>(
 
   if (scope) baseAtom.scope = scope;
 
-  const anAtom = atom<InfiniteData<Data>, AtomWithInfiniteQueryAction>(
+  const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>(
     get => {
       const { initialData, queryAtom, queryKey } = get(baseAtom);
       const deps = [anAtom] as const;

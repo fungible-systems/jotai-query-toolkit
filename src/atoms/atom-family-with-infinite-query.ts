@@ -13,10 +13,10 @@ import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomFamily, AtomFamilyWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
 import { Scope } from 'jotai/core/atom';
 import { setWeakCacheItem } from '../cache';
-import { getScope } from './utils/set-global-scope';
 
-export function asInfiniteData<Data>(data: Data): InfiniteData<Data> {
-  if (data && 'pages' in data && 'pageParams' in data) return data as unknown as InfiniteData<Data>;
+export function asInfiniteData<Data>(data: Data): InfiniteData<Data> | undefined {
+  if (!data) return;
+  if ('pages' in data && 'pageParams' in data) return data as unknown as InfiniteData<Data>;
   return {
     pages: [data],
     pageParams: [undefined],
@@ -28,8 +28,8 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
   queryFn: AtomFamilyWithInfiniteQueryFn<Param, Data>,
   options: AtomWithInfiniteQueryOptions<Data> = {},
   scope?: Scope
-): AtomFamily<Param, WritableAtom<InfiniteData<Data>, AtomWithInfiniteQueryAction>> => {
-  return atomFamily<Param, InfiniteData<Data>, AtomWithInfiniteQueryAction>(param => {
+): AtomFamily<Param, WritableAtom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>> => {
+  return atomFamily<Param, InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>(param => {
     const {
       equalityFn = deepEqual,
       getShouldRefetch,
@@ -86,7 +86,7 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
     });
     if (scope) baseAtom.scope = scope;
 
-    const anAtom = atom<InfiniteData<Data>, AtomWithInfiniteQueryAction>(
+    const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>(
       get => {
         const { initialData, queryAtom, queryKey } = get(baseAtom);
         const deps = [anAtom] as const;

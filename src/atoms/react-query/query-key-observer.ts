@@ -11,7 +11,7 @@ export const queryKeyObserver = atomFamily<QueryKey, QueryObserver>(
       const options = queryClient.getQueryCache().find(queryKey)?.options || { queryKey };
       const defaultedOptions = queryClient.defaultQueryObserverOptions({
         ...options,
-        notifyOnChangeProps: ['data', 'error', 'isFetching', 'isIdle', 'isSuccess', 'isStale'],
+        notifyOnChangeProps: ['isFetching', 'isIdle', 'isSuccess', 'isStale'],
       });
       return new QueryObserver(queryClient, defaultedOptions);
     }),
