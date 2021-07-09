@@ -32,3 +32,7 @@ export function makeQueryKey<P>(key: QueryKey, param?: P): [QueryKey, P] | Query
 }
 
 export const queryKeyCache = new WeakMap();
+
+export function makeError(message: string) {
+  return new Error(`[jotai-query-toolkit] ${message}`);
+}

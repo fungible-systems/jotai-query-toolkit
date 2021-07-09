@@ -5,6 +5,7 @@ import deepEqual from 'fast-deep-equal';
 import { atom } from 'jotai';
 
 export interface QueryStatus {
+  isLoading: boolean;
   isFetching: boolean;
   isIdle: boolean;
   isSuccess: boolean;
@@ -15,8 +16,9 @@ export const queryStatusAtomFamily = atomFamily<QueryKey, QueryStatus, QueryStat
   queryKey =>
     atomWithDefault<QueryStatus>(get => {
       const observer = get(queryKeyObserver(queryKey));
-      const { isFetching, isIdle, isSuccess, isStale } = observer.getCurrentResult();
+      const { isFetching, isLoading, isIdle, isSuccess, isStale } = observer.getCurrentResult();
       return {
+        isLoading,
         isFetching,
         isIdle,
         isSuccess,
@@ -37,8 +39,9 @@ export const queryKeyStatusAtom = atomFamily<QueryKey, QueryStatus>(queryKey => 
       throw new Error('queryKeyObserver: setting data without mount');
     };
 
-    const listener = ({ isFetching, isIdle, isSuccess, isStale }: QueryObserverResult) =>
+    const listener = ({ isFetching, isLoading, isIdle, isSuccess, isStale }: QueryObserverResult) =>
       setData({
+        isLoading,
         isFetching,
         isIdle,
         isSuccess,

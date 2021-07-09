@@ -5,19 +5,30 @@ import {
   AtomWithQueryAction,
   getQueryClientAtom,
 } from 'jotai/query';
-import { hashQueryKey, QueryKey } from 'react-query';
+import { hashQueryKey, MutateOptions, QueryKey } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomWithQueryRefreshOptions, AtomWithQueryFn } from './types';
-import { Scope } from 'jotai/core/atom';
 import { setWeakCacheItem } from '../cache';
+import { queryKeyObserver } from './react-query/query-key-observer';
+import { SetDataOptions } from 'react-query/types/core/query';
+
+export type JQTAtomWithQueryActions<Data> =
+  | AtomWithQueryAction
+  | {
+      type: 'setQueryData';
+      payload: {
+        data: Data;
+        options?: SetDataOptions;
+      };
+    }
+  | { type: 'mutate'; payload: MutateOptions<Data> };
 
 export const atomWithQuery = <Data>(
   key: QueryKey,
   queryFn: AtomWithQueryFn<Data>,
-  options: AtomWithQueryRefreshOptions<Data> = {},
-  scope?: Scope
+  options: AtomWithQueryRefreshOptions<Data> = {}
 ) => {
   const {
     equalityFn = deepEqual,
@@ -39,9 +50,11 @@ export const atomWithQuery = <Data>(
     const hashedQueryKey = hashQueryKey(queryKey);
     const theInitialDataAtom = initialDataAtom(hashedQueryKey);
     const initialData = get(theInitialDataAtom) as unknown as Data;
+
     const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
     const queryClient = get(getQueryClientAtom);
-    const defaultOptions = queryClient?.getDefaultOptions() || {};
+    const defaultOptions = queryClient.defaultQueryOptions(rest);
+
     const getRefreshInterval = () => {
       return shouldRefresh
         ? refetchInterval === false
@@ -55,17 +68,15 @@ export const atomWithQuery = <Data>(
         queryKey,
         queryFn: () => queryFn(get),
         ...defaultOptions,
-        initialData,
-        ...(rest as any),
         refetchInterval: getRefreshInterval(),
         refetchOnMount: shouldRefresh ? refetchOnMount : false,
         refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
         refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
+        initialData,
       }),
       equalityFn
     );
     queryAtom.debugLabel = `atomWithQuery/queryAtom/${hashedQueryKey}`;
-    if (scope) queryAtom.scope = scope;
 
     return {
       queryKey,
@@ -74,19 +85,39 @@ export const atomWithQuery = <Data>(
     };
   });
 
-  if (scope) baseAtom.scope = scope;
-
-  const anAtom = atom<Data, AtomWithQueryAction>(
+  const anAtom = atom<Data, JQTAtomWithQueryActions<Data>>(
     get => {
       const { initialData, queryAtom, queryKey } = get(baseAtom);
       const deps = [anAtom] as const;
       setWeakCacheItem(queryKeyCache, deps, queryKey);
       return IS_SSR ? initialData : get(queryAtom);
     },
-    (get, set, action) => set(get(baseAtom).queryAtom, action)
+    (get, set, action) => {
+      const { queryKey } = get(baseAtom);
+
+      switch (action.type) {
+        case 'refetch': {
+          const observer = get(queryKeyObserver(queryKey));
+          void observer.refetch();
+          break;
+        }
+        case 'setQueryData': {
+          const queryClient = get(getQueryClientAtom);
+          void queryClient
+            .getQueryCache()
+            .find(queryKey)
+            ?.setData(action.payload.data, action.payload.options);
+          break;
+        }
+        case 'mutate': {
+          const queryClient = get(getQueryClientAtom);
+          void queryClient.executeMutation(action.payload);
+          break;
+        }
+      }
+    }
   );
   anAtom.debugLabel = `atomWithQuery/${hashQueryKey(makeQueryKey(key))}`;
-  if (scope) anAtom.scope = scope;
 
   return anAtom;
 };

@@ -4,16 +4,14 @@ import type {
   AtomFamilyWithInfiniteQueryFn,
   AtomFamily,
 } from '../types';
-import type { Scope } from 'jotai/core/atom';
 import type { InfiniteData, QueryKey } from 'react-query';
-import { AtomWithInfiniteQueryAction } from 'jotai/query';
-import { WritableAtom } from 'jotai';
+import type { AtomWithInfiniteQueryAction } from 'jotai/query';
+import type { WritableAtom } from 'jotai';
 
 interface MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>
   extends Omit<AtomWithInfiniteQueryOptions<Data>, 'queryFn'> {
   queryKey: QueryKey;
   queryFn: AtomFamilyWithInfiniteQueryFn<Param, Data>;
-  scope?: Scope;
 }
 
 const cache = new WeakMap();
@@ -31,16 +29,11 @@ export const makeAtomFamilyWithInfiniteQuery =
     if (cache.has(deps)) {
       return cache.get(deps);
     }
-    const { queryFn, queryKey, scope, ...defaultOptions } = initOptions;
-    const anAtom = atomFamilyWithInfiniteQuery<Param, Data>(
-      queryKey,
-      queryFn,
-      {
-        ...defaultOptions,
-        ...options,
-      },
-      scope
-    );
+    const { queryFn, queryKey, ...defaultOptions } = initOptions;
+    const anAtom = atomFamilyWithInfiniteQuery<Param, Data>(queryKey, queryFn, {
+      ...defaultOptions,
+      ...options,
+    });
     cache.set(deps, anAtom);
     return anAtom;
   };

@@ -1,24 +1,25 @@
 import deepEqual from 'fast-deep-equal';
-import { atom, Getter } from 'jotai';
+import { atom } from 'jotai';
 import {
   atomWithInfiniteQuery as jotaiAtomWithInfiniteQuery,
-  AtomWithInfiniteQueryAction,
   getQueryClientAtom,
 } from 'jotai/query';
-import { hashQueryKey, InfiniteData, QueryKey } from 'react-query';
+import { hashQueryKey } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
-import { AtomWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
-import { Scope } from 'jotai/core/atom';
-import { asInfiniteData } from './atom-family-with-infinite-query';
 import { setWeakCacheItem } from '../cache';
+import { asInfiniteData } from './utils/as-infinite-data';
+
+import type { AtomWithInfiniteQueryAction } from 'jotai/query';
+import type { InfiniteData, QueryKey } from 'react-query';
+import type { AtomWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
+import type { Getter } from 'jotai';
 
 export const atomWithInfiniteQuery = <Data>(
   key: QueryKey,
   queryFn: AtomWithInfiniteQueryFn<Data>,
-  options: AtomWithInfiniteQueryOptions<Data> = {},
-  scope?: Scope
+  options: AtomWithInfiniteQueryOptions<Data> = {}
 ) => {
   const {
     equalityFn = deepEqual,
@@ -41,9 +42,11 @@ export const atomWithInfiniteQuery = <Data>(
     const hashedQueryKey = hashQueryKey(queryKey);
     const theInitialDataAtom = initialDataAtom(hashedQueryKey);
     const initialData = asInfiniteData(get(theInitialDataAtom) as unknown as Data);
+
     const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
     const queryClient = get(getQueryClientAtom);
-    const defaultOptions = queryClient?.getDefaultOptions() || {};
+    const defaultOptions = queryClient.defaultQueryOptions(rest);
+
     const getRefreshInterval = () => {
       return shouldRefresh
         ? refetchInterval === false
@@ -56,9 +59,8 @@ export const atomWithInfiniteQuery = <Data>(
       get => ({
         queryKey,
         queryFn: context => queryFn(get, context),
-        ...defaultOptions,
+        ...(defaultOptions as any),
         initialData,
-        ...(rest as any),
         refetchInterval: getRefreshInterval(),
         refetchOnMount: shouldRefresh ? refetchOnMount : false,
         refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
@@ -67,7 +69,6 @@ export const atomWithInfiniteQuery = <Data>(
       equalityFn
     );
     queryAtom.debugLabel = `atomWithInfiniteQuery/queryAtom/${hashedQueryKey}`;
-    if (scope) queryAtom.scope = scope;
 
     return {
       queryKey,
@@ -75,8 +76,6 @@ export const atomWithInfiniteQuery = <Data>(
       initialData,
     };
   });
-
-  if (scope) baseAtom.scope = scope;
 
   const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>(
     get => {
@@ -88,7 +87,6 @@ export const atomWithInfiniteQuery = <Data>(
     (get, set, action) => set(get(baseAtom).queryAtom, action)
   );
   anAtom.debugLabel = `atomWithInfiniteQuery/${hashQueryKey(makeQueryKey(key))}`;
-  if (scope) anAtom.scope = scope;
 
   return anAtom;
 };

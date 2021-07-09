@@ -1,21 +1,18 @@
 //---------------------
 // next.js specific
 //---------------------
-export {
-  getCachedQueryData,
-  getDataFromQueryArray,
-  getSingleCachedQueryData,
-  getInitialPropsFromQueries,
-} from './nextjs/index';
-
-export { useQueryInitialValues } from './nextjs/hooks';
-export { withInitialQueries } from './nextjs/hoc';
+export { withInitialQueries } from './nextjs/with-initial-queries';
 export { IS_SSR } from './constants';
+export { getInitialPropsFromQueries } from './nextjs/get-initial-props-from-queries';
+export { getDataFromQueryArray } from './nextjs/query-helpers';
+export { getCachedQueryData } from './nextjs/query-helpers';
+export { getSingleCachedQueryData } from './nextjs/query-helpers';
+export { useQueryInitialValues } from './nextjs/use-query-initial-values';
 export type {
   QueryPropsGetter,
   GetQueries,
   Queries,
-  Fetcher,
-  GetQueryKey,
   Query,
-} from './nextjs/index';
+  GetQueryKey,
+  Fetcher,
+} from './nextjs/types';

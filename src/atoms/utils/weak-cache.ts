@@ -31,5 +31,4 @@ export const setWeakCacheItem = <T>(
     return;
   }
   setWeakCacheItem(entry[0], rest, item);
-  console.log('setting cache,', entry[0]);
 };

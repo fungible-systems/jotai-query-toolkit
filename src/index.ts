@@ -3,16 +3,15 @@
 //---------------------
 export { atomFamilyWithQuery } from './atoms/atom-family-with-query';
 export { atomFamilyWithInfiniteQuery } from './atoms/atom-family-with-infinite-query';
-export { atomWithQuery } from './atoms/atom-with-query-refresh';
+export { atomWithQuery } from './atoms/atom-with-query';
 export { atomWithInfiniteQuery } from './atoms/atom-with-infinite-query';
 export { initialDataAtom } from './atoms/intitial-data-atom';
 export { infiniteQueryKeyStatusAtom } from './atoms/react-query/infinite-query-key-status-atom';
-export type { InfiniteQueryStatus } from './atoms/react-query/infinite-query-key-status-atom';
 export { queryKeyStatusAtom } from './atoms/react-query/query-key-status-atom';
-export type { QueryStatus } from './atoms/react-query/query-key-status-atom';
 export { queryKeyObserver } from './atoms/react-query/query-key-observer';
 export { infiniteQueryKeyObserver } from './atoms/react-query/infinite-query-key-observer';
 export { devtoolAtom } from './atoms/devtool-atom';
+
 // utils
 export { makeAtomWithQuery } from './atoms/utils/make-atom-with-query';
 export { makeAtomFamilyWithQuery } from './atoms/utils/make-atom-family-with-query';
@@ -33,11 +32,11 @@ export type {
   ParamWithListParams,
   ListParams,
 } from './atoms/types';
-
+export type { InfiniteQueryStatus } from './atoms/react-query/infinite-query-key-status-atom';
+export type { QueryStatus } from './atoms/react-query/query-key-status-atom';
 //---------------------
 // utils + misc
 //---------------------
 export { queryClient } from './query-client';
 export { makeQueryKey, queryKeyCache } from './utils';
 export { QueryRefreshRates, IS_SSR } from './constants';
-export { setScope, SCOPE_CACHE_KEY, cache, getScope } from './atoms/utils/set-global-scope';

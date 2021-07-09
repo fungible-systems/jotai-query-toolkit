@@ -1,29 +1,29 @@
 {
   "index.js": {
-    "bundled": 34495,
-    "minified": 20741,
-    "gzipped": 4318,
+    "bundled": 29823,
+    "minified": 18363,
+    "gzipped": 4164,
     "treeshaked": {
       "rollup": {
-        "code": 8747,
-        "import_statements": 339
+        "code": 8065,
+        "import_statements": 390
       },
       "webpack": {
-        "code": 11208
+        "code": 10491
       }
     }
   },
   "nextjs.js": {
-    "bundled": 5752,
-    "minified": 3237,
-    "gzipped": 1270,
+    "bundled": 5476,
+    "minified": 2989,
+    "gzipped": 1154,
     "treeshaked": {
       "rollup": {
-        "code": 321,
-        "import_statements": 177
+        "code": 96,
+        "import_statements": 96
       },
       "webpack": {
-        "code": 1595
+        "code": 1333
       }
     }
   }

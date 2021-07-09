@@ -24,15 +24,10 @@ const _makeAtomFamilyWithQuery = <Param, Data>(initOptions: InitOptions<Param, D
       return cache.get(deps);
     }
     const { queryFn, queryKey, scope, ...defaultOptions } = initOptions;
-    const anAtom = atomFamilyWithQuery<Param, Data>(
-      queryKey,
-      queryFn,
-      {
-        ...defaultOptions,
-        ...options,
-      },
-      scope
-    );
+    const anAtom = atomFamilyWithQuery<Param, Data>(queryKey, queryFn, {
+      ...defaultOptions,
+      ...options,
+    });
     cache.set(deps, anAtom);
     return anAtom;
   });

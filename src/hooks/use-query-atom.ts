@@ -7,8 +7,10 @@ import { getWeakCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
 import type { QueryKey } from 'react-query';
-import type { AtomWithQueryAction } from 'jotai/query';
 import { queryKeyStatusAtom, QueryStatus } from '../atoms/react-query/query-key-status-atom';
+import { JQTAtomWithQueryActions } from '../atoms/atom-with-query';
+import { SetDataOptions } from 'react-query/types/core/query';
+import { getQueryClientAtom } from 'jotai/query';
 import { queryKeyObserver } from '../atoms/react-query/query-key-observer';
 
 const noopAtom = atom<undefined>(undefined);
@@ -18,11 +20,15 @@ const conditionalQueryKeyAtom = (queryKey: QueryKey | undefined) => {
   return queryKeyStatusAtom(queryKey);
 };
 
-export interface BaseExtras extends QueryStatus {
+export interface BaseExtras<T> extends QueryStatus {
   refetch: () => void;
+  setQueryData: ({ data, options }: { data: T; options?: SetDataOptions }) => void;
+  // mutate: (options: MutationOptions<T>) => void;
 }
 
-export function useQueryAtom<T>(anAtom: WritableAtom<T, AtomWithQueryAction>): [T, BaseExtras] {
+export function useQueryAtom<T>(
+  anAtom: WritableAtom<T, JQTAtomWithQueryActions<T>>
+): [T, BaseExtras<T>] {
   const atom = useMemo(() => anAtom, [anAtom]);
   const value = useAtomValue<T>(atom);
   const deps = [atom] as const;
@@ -46,11 +52,38 @@ export function useQueryAtom<T>(anAtom: WritableAtom<T, AtomWithQueryAction>): [
     )
   );
 
+  const setQueryData = useAtomCallback<
+    void,
+    {
+      data: T;
+      options?: SetDataOptions;
+    }
+  >(
+    useCallback(
+      async (get, set, payload) => {
+        const queryClient = get(getQueryClientAtom);
+        await queryClient.getQueryCache().find(queryKey)?.setData(payload.data, payload.options);
+      },
+      [atom]
+    )
+  );
+
+  // const mutate = useAtomCallback<void, MutationOptions<T>>(
+  //   useCallback(
+  //     async (get, set, payload) => {
+  //       const queryClient = get(getQueryClientAtom);
+  //       await queryClient.executeMutation(payload);
+  //     },
+  //     [atom]
+  //   )
+  // );
+
   const status = _status || {};
   return [
     value,
     {
       refetch,
+      setQueryData,
       ...(status as QueryStatus),
     },
   ];

@@ -4,7 +4,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import esbuild from 'rollup-plugin-esbuild';
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
-import jsx from 'acorn-jsx';
 
 const createBabelConfig = require('./babel.config');
 const extensions = ['.js', '.ts', '.tsx'];
@@ -31,7 +30,6 @@ function getEsbuild(target) {
     jsxFragment: 'React.Fragment',
     loaders: {
       '.ts': 'ts',
-      '.tsx': 'tsx',
     },
     tsconfig: path.resolve('./tsconfig.json'),
   });
@@ -43,9 +41,8 @@ function createDeclarationConfig(input, output) {
     output: {
       dir: output,
     },
-    acornInjectPlugins: [jsx()],
     external,
-    plugins: [typescript({ declaration: true, outDir: output, jsx: 'preserve' })],
+    plugins: [typescript({ declaration: true, outDir: output })],
   };
 }
 
