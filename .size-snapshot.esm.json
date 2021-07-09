@@ -14,9 +14,9 @@
     }
   },
   "nextjs.js": {
-    "bundled": 5476,
-    "minified": 2989,
-    "gzipped": 1154,
+    "bundled": 6045,
+    "minified": 3269,
+    "gzipped": 1250,
     "treeshaked": {
       "rollup": {
         "code": 96,
