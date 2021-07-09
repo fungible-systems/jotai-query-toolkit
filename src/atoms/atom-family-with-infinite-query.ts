@@ -1,4 +1,4 @@
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'fast-deep-equal/es6';
 import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
 import { getKeys, makeDebugLabel } from './utils/get-query-key';

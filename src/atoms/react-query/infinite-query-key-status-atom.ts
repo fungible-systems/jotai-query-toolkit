@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
 import { atomFamily, atomWithDefault } from 'jotai/utils';
 import { InfiniteQueryObserverResult, QueryKey } from 'react-query';
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'fast-deep-equal/es6';
 import { infiniteQueryKeyObserver } from './infinite-query-key-observer';
 
 export interface InfiniteQueryStatus {

@@ -2,7 +2,7 @@ import { atomFamily } from 'jotai/utils';
 import { InfiniteQueryObserver, InfiniteQueryObserverOptions, QueryKey } from 'react-query';
 import { atom } from 'jotai';
 import { getQueryClientAtom } from 'jotai/query';
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'fast-deep-equal/es6';
 
 export const infiniteQueryKeyObserver = atomFamily<QueryKey, InfiniteQueryObserver>(
   queryKey =>

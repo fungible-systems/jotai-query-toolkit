@@ -1,7 +1,7 @@
 import { atomFamily, atomWithDefault } from 'jotai/utils';
 import { QueryKey, QueryObserverResult } from 'react-query';
 import { queryKeyObserver } from './query-key-observer';
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'fast-deep-equal/es6';
 import { atom } from 'jotai';
 
 export interface QueryStatus {

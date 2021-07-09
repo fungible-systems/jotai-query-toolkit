@@ -1,4 +1,4 @@
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'fast-deep-equal/es6';
 import { atom, Getter } from 'jotai';
 import {
   atomWithQuery as jotaiAtomWithQuery,
