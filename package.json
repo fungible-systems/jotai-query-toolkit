@@ -1,10 +1,11 @@
 {
   "name": "jotai-query-toolkit",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A toolkit for opinionated ways to use Jotai, react-query, and next.js",
   "main": "index.js",
   "module": "esm/index.js",
+  "import": "esm/index.js",
   "types": "index.d.ts",
   "typesVersions": {
     "<4.0": {
@@ -21,11 +22,13 @@
     ".": {
       "types": "./index.d.ts",
       "module": "./esm/index.js",
+      "import": "./esm/index.js",
       "default": "./index.js"
     },
     "./nextjs": {
       "types": "./nextjs.d.ts",
       "module": "./esm/nextjs.js",
+      "import": "./esm/nextjs.js",
       "default": "./nextjs.js"
     }
   },
