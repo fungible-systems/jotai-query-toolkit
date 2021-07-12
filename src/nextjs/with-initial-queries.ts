@@ -5,9 +5,10 @@ import { Provider } from 'jotai';
 import { hashQueryKey } from 'react-query';
 import { getInitialPropsFromQueries } from './get-initial-props-from-queries';
 import { useQueryInitialValues } from './use-query-initial-values';
+import { buildInitialValueAtoms } from './build-initial-value-atoms';
 
 import type { NextPage, NextPageContext } from 'next';
-import type { GetQueries, Queries, QueryPropsGetter } from './types';
+import type { InitialValuesAtomBuilder, GetQueries, Queries, QueryPropsGetter } from './types';
 
 /**
  * withInitialQueries
@@ -15,9 +16,11 @@ import type { GetQueries, Queries, QueryPropsGetter } from './types';
  * Higher order function that wraps a next.js page component
  *
  * @param WrappedComponent - The next.js page component to wrap
+ * @param initialValuesAtomBuilders - Optional values to add to our provider
  */
 export function withInitialQueries<QueryProps = unknown, PageProps = Record<string, unknown>>(
-  WrappedComponent: NextPage<PageProps>
+  WrappedComponent: NextPage<PageProps>,
+  initialValuesAtomBuilders?: InitialValuesAtomBuilder[]
 ) {
   /**
    * withWrapper
@@ -35,16 +38,25 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
       initialQueryData: Record<string, unknown>;
     }> = ({ initialQueryData, ...props }) => {
       const initialQueries = useQueryInitialValues(initialQueryData);
-      const keys = Object.keys(initialQueryData);
 
+      let initialValues = [[queryClientAtom, queryClient] as const, ...Array.from(initialQueries)];
+
+      // sometimes apps require additional atoms to be set within this provider,
+      // this will build the atoms and add them to our initialValues array
+      if (initialValuesAtomBuilders) {
+        initialValues = initialValues.concat(
+          buildInitialValueAtoms(props as Record<string, unknown>, initialValuesAtomBuilders)
+        );
+        initialValuesAtomBuilders.forEach(([propKey]) => {
+          delete (props as Record<string, unknown>)[propKey];
+        });
+      }
+
+      const keys = Object.keys(initialQueryData);
       // this key is very important, without passing key={key} to the Provider,
       // it won't know to re-render if someone navigates within the same page component in next.js
       const key = useMemo(() => hashQueryKey(keys), [keys]);
 
-      const initialValues = [
-        [queryClientAtom, queryClient] as const,
-        ...Array.from(initialQueries),
-      ];
       return createElement(
         Provider,
         { initialValues, key },
@@ -74,7 +86,6 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
       const [initialQueryData, componentProps] = await Promise.all(promises);
 
       return {
-        key: hashQueryKey(Object.keys(initialQueryData)),
         initialQueryData,
         ...componentProps,
       };

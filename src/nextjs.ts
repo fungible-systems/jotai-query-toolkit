@@ -8,6 +8,7 @@ export { getDataFromQueryArray } from './nextjs/query-helpers';
 export { getCachedQueryData } from './nextjs/query-helpers';
 export { getSingleCachedQueryData } from './nextjs/query-helpers';
 export { useQueryInitialValues } from './nextjs/use-query-initial-values';
+export { buildInitialValueAtoms } from './nextjs/build-initial-value-atoms';
 export type {
   QueryPropsGetter,
   GetQueries,
@@ -15,4 +16,7 @@ export type {
   Query,
   GetQueryKey,
   Fetcher,
+  InitialValuesAtomBuilder,
+  GetInitialPropsFromQueriesOptions,
+  QueryPropsDefault,
 } from './nextjs/types';

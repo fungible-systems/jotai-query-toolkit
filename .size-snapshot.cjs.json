@@ -1,12 +1,12 @@
 {
   "index.js": {
-    "bundled": 31979,
-    "minified": 17311,
-    "gzipped": 4331
+    "bundled": 32273,
+    "minified": 17537,
+    "gzipped": 4379
   },
   "nextjs.js": {
-    "bundled": 10424,
-    "minified": 6019,
-    "gzipped": 1974
+    "bundled": 11946,
+    "minified": 6890,
+    "gzipped": 2246
   }
 }
