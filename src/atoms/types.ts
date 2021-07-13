@@ -13,7 +13,7 @@ export interface BaseQueryAtomCustomOptions<Data> {
   getShouldRefetch?: (initialData: Data) => boolean;
 }
 
-export type AtomWithQueryRefreshOptions<Data> = QueryObserverOptions<Data, void, Data> &
+export type AtomWithQueryOptions<Data> = QueryObserverOptions<Data, void, Data> &
   BaseQueryAtomCustomOptions<Data>;
 
 export interface AtomWithInfiniteQueryOptions<Data>

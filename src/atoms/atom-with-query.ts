@@ -9,7 +9,7 @@ import { hashQueryKey, MutateOptions, QueryKey } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
-import { AtomWithQueryRefreshOptions, AtomWithQueryFn } from './types';
+import { AtomWithQueryOptions, AtomWithQueryFn } from './types';
 import { setWeakCacheItem } from '../cache';
 import { queryKeyObserver } from './react-query/query-key-observer';
 import { SetDataOptions } from 'react-query/types/core/query';
@@ -28,7 +28,7 @@ export type JQTAtomWithQueryActions<Data> =
 export const atomWithQuery = <Data>(
   key: QueryKey,
   queryFn: AtomWithQueryFn<Data>,
-  options: AtomWithQueryRefreshOptions<Data> = {}
+  options: AtomWithQueryOptions<Data> = {}
 ) => {
   const {
     equalityFn = deepEqual,
