@@ -7,12 +7,12 @@ import { setWeakCacheItem } from '../cache';
 import { getKeys, makeDebugLabel } from './utils/get-query-key';
 import type { QueryKey } from 'react-query';
 import type { JQTAtomWithQueryActions } from './atom-with-query';
-import type { AtomFamilyWithQueryFn, AtomWithQueryRefreshOptions } from './types';
+import type { AtomFamilyWithQueryFn, AtomWithQueryOptions } from './types';
 
 export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data>(
   key: QueryKey,
   queryFn: AtomFamilyWithQueryFn<Param, Data>,
-  options: AtomWithQueryRefreshOptions<Data> = {}
+  options: AtomWithQueryOptions<Data> = {}
 ) =>
   atomFamily<Param, Data, JQTAtomWithQueryActions<Data>>(param => {
     const { queryKeyAtom, ...queryOptions } = options;

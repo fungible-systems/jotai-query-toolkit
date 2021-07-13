@@ -1,3 +1,4 @@
+import memoize from 'proxy-memoize';
 import { atomFamilyWithInfiniteQuery } from '../atom-family-with-infinite-query';
 import type {
   AtomWithInfiniteQueryOptions,
@@ -14,7 +15,6 @@ interface MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>
   queryFn: AtomFamilyWithInfiniteQueryFn<Param, Data>;
 }
 
-const cache = new WeakMap();
 type InitOptions<Param, Data> = MakeAtomFamilyWithInfiniteQueryOptions<Param, Data>;
 type Options<Data> = Omit<AtomWithInfiniteQueryOptions<Data>, 'queryKey' | 'queryFn'>;
 type Return<Param, Data> = AtomFamily<
@@ -22,18 +22,14 @@ type Return<Param, Data> = AtomFamily<
   WritableAtom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>
 >;
 
-export const makeAtomFamilyWithInfiniteQuery =
+export const makeAtomFamilyWithInfiniteQuery = memoize(
   <Param, Data>(initOptions: InitOptions<Param, Data>) =>
-  (options: Options<Data> = {}): Return<Param, Data> => {
-    const deps = [initOptions, options] as const;
-    if (cache.has(deps)) {
-      return cache.get(deps);
-    }
-    const { queryFn, queryKey, ...defaultOptions } = initOptions;
-    const anAtom = atomFamilyWithInfiniteQuery<Param, Data>(queryKey, queryFn, {
-      ...defaultOptions,
-      ...options,
-    });
-    cache.set(deps, anAtom);
-    return anAtom;
-  };
+    memoize((options: Options<Data> = {}): Return<Param, Data> => {
+      const { queryFn, queryKey, ...defaultOptions } = initOptions;
+      const anAtom = atomFamilyWithInfiniteQuery<Param, Data>(queryKey, queryFn, {
+        ...defaultOptions,
+        ...options,
+      });
+      return anAtom;
+    })
+);

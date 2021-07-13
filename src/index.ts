@@ -24,7 +24,7 @@ export { useQueryAtom } from './hooks/use-query-atom';
 // types
 export type {
   AtomFamilyWithQueryFn,
-  AtomWithQueryRefreshOptions,
+  AtomWithQueryOptions,
   AtomWithInfiniteQueryOptions,
   InfiniteQueryDispatch,
   AtomWithQueryFn,
