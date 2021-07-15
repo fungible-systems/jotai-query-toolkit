@@ -1,10 +1,6 @@
 import deepEqual from 'fast-deep-equal/es6';
 import { atom, Getter } from 'jotai';
-import {
-  atomWithQuery as jotaiAtomWithQuery,
-  AtomWithQueryAction,
-  getQueryClientAtom,
-} from 'jotai/query';
+import { atomWithQuery as jotaiAtomWithQuery, AtomWithQueryAction } from 'jotai/query';
 import { hashQueryKey, MutateOptions, QueryKey } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
@@ -13,6 +9,7 @@ import { AtomWithQueryOptions, AtomWithQueryFn } from './types';
 import { setWeakCacheItem } from '../cache';
 import { queryKeyObserver } from './react-query/query-key-observer';
 import { SetDataOptions } from 'react-query/types/core/query';
+import { getQueryClientAtom, queryClientAtom } from './react-query/query-client-atom';
 
 export type JQTAtomWithQueryActions<Data> =
   | AtomWithQueryAction
@@ -52,7 +49,7 @@ export const atomWithQuery = <Data>(
     const initialData = get(theInitialDataAtom) as unknown as Data;
 
     const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
-    const queryClient = get(getQueryClientAtom);
+    const queryClient = get(queryClientAtom);
     const defaultOptions = queryClient.defaultQueryOptions(rest);
 
     const getRefreshInterval = () => {
@@ -74,7 +71,7 @@ export const atomWithQuery = <Data>(
         refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
         initialData,
       }),
-      equalityFn
+      getQueryClientAtom
     );
     queryAtom.debugLabel = `atomWithQuery/queryAtom/${hashedQueryKey}`;
 
@@ -102,7 +99,7 @@ export const atomWithQuery = <Data>(
           break;
         }
         case 'setQueryData': {
-          const queryClient = get(getQueryClientAtom);
+          const queryClient = getQueryClientAtom(get);
           void queryClient
             .getQueryCache()
             .find(queryKey)
@@ -110,7 +107,7 @@ export const atomWithQuery = <Data>(
           break;
         }
         case 'mutate': {
-          const queryClient = get(getQueryClientAtom);
+          const queryClient = getQueryClientAtom(get);
           void queryClient.executeMutation(action.payload);
           break;
         }

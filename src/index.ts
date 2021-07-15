@@ -5,6 +5,7 @@ export { atomFamilyWithQuery } from './atoms/atom-family-with-query';
 export { atomFamilyWithInfiniteQuery } from './atoms/atom-family-with-infinite-query';
 export { atomWithQuery } from './atoms/atom-with-query';
 export { atomWithInfiniteQuery } from './atoms/atom-with-infinite-query';
+export * from './atoms/react-query/query-client-atom';
 export { initialDataAtom } from './atoms/intitial-data-atom';
 export { infiniteQueryKeyStatusAtom } from './atoms/react-query/infinite-query-key-status-atom';
 export { queryKeyStatusAtom } from './atoms/react-query/query-key-status-atom';

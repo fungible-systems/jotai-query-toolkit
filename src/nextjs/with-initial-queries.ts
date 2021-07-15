@@ -1,6 +1,5 @@
 import { createElement, useMemo } from 'react';
 import { queryClient } from 'jotai-query-toolkit';
-import { queryClientAtom } from 'jotai/query';
 import { Provider } from 'jotai';
 import { hashQueryKey } from 'react-query';
 import { getInitialPropsFromQueries } from './get-initial-props-from-queries';
@@ -39,7 +38,7 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
     }> = ({ initialQueryData, ...props }) => {
       const initialQueries = useQueryInitialValues(initialQueryData);
 
-      let initialValues = [[queryClientAtom, queryClient] as const, ...Array.from(initialQueries)];
+      let initialValues = Array.from(initialQueries);
 
       // sometimes apps require additional atoms to be set within this provider,
       // this will build the atoms and add them to our initialValues array

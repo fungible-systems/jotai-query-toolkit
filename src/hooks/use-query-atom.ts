@@ -10,8 +10,8 @@ import type { QueryKey } from 'react-query';
 import { queryKeyStatusAtom, QueryStatus } from '../atoms/react-query/query-key-status-atom';
 import { JQTAtomWithQueryActions } from '../atoms/atom-with-query';
 import { SetDataOptions } from 'react-query/types/core/query';
-import { getQueryClientAtom } from 'jotai/query';
 import { queryKeyObserver } from '../atoms/react-query/query-key-observer';
+import { getQueryClientAtom } from '../atoms/react-query/query-client-atom';
 
 const noopAtom = atom<undefined>(undefined);
 
@@ -61,7 +61,7 @@ export function useQueryAtom<T>(
   >(
     useCallback(
       async (get, set, payload) => {
-        const queryClient = get(getQueryClientAtom);
+        const queryClient = getQueryClientAtom(get);
         await queryClient.getQueryCache().find(queryKey)?.setData(payload.data, payload.options);
       },
       [atom]
