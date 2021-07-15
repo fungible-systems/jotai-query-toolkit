@@ -1,15 +1,13 @@
 import deepEqual from 'fast-deep-equal/es6';
 import { atom } from 'jotai';
-import {
-  atomWithInfiniteQuery as jotaiAtomWithInfiniteQuery,
-  getQueryClientAtom,
-} from 'jotai/query';
+import { atomWithInfiniteQuery as jotaiAtomWithInfiniteQuery } from 'jotai/query';
 import { hashQueryKey } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 import { setWeakCacheItem } from '../cache';
 import { asInfiniteData } from './utils/as-infinite-data';
+import { getQueryClientAtom } from './react-query/query-client-atom';
 
 import type { AtomWithInfiniteQueryAction } from 'jotai/query';
 import type { InfiniteData, QueryKey } from 'react-query';
@@ -44,7 +42,7 @@ export const atomWithInfiniteQuery = <Data>(
     const initialData = asInfiniteData(get(theInitialDataAtom) as unknown as Data);
 
     const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
-    const queryClient = get(getQueryClientAtom);
+    const queryClient = getQueryClientAtom(get);
     const defaultOptions = queryClient.defaultQueryOptions(rest);
 
     const getRefreshInterval = () => {
@@ -66,7 +64,7 @@ export const atomWithInfiniteQuery = <Data>(
         refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
         refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
       }),
-      equalityFn
+      getQueryClientAtom
     );
     queryAtom.debugLabel = `atomWithInfiniteQuery/queryAtom/${hashedQueryKey}`;
 

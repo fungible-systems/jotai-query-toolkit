@@ -9,6 +9,7 @@ export { getCachedQueryData } from './nextjs/query-helpers';
 export { getSingleCachedQueryData } from './nextjs/query-helpers';
 export { useQueryInitialValues } from './nextjs/use-query-initial-values';
 export { buildInitialValueAtoms } from './nextjs/build-initial-value-atoms';
+export { JqtDevtools } from './devtools';
 export type {
   QueryPropsGetter,
   GetQueries,
