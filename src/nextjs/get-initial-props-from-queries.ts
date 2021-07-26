@@ -32,53 +32,62 @@ import { getCachedQueryData } from './query-helpers';
 export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>(
   options: GetInitialPropsFromQueriesOptions<QueryProps>
 ) {
-  const { getQueries, ctx, getQueryProps, queryClient } = options;
+  try {
+    const { getQueries, ctx, getQueryProps, queryClient } = options;
 
-  const queryProps: QueryProps | undefined = getQueryProps
-    ? await getQueryProps(ctx, queryClient)
-    : undefined;
+    const queryProps: QueryProps | undefined = getQueryProps
+      ? await getQueryProps(ctx, queryClient)
+      : undefined;
 
-  const getQueryKey = (queryKey: GetQueryKey<QueryProps> | QueryKey) => {
-    if (typeof queryKey === 'function') return queryKey(ctx, queryProps, queryClient);
-    return queryKey;
-  };
+    const getQueryKey = (queryKey: GetQueryKey<QueryProps> | QueryKey) => {
+      if (typeof queryKey === 'function') return queryKey(ctx, queryProps, queryClient);
+      return queryKey;
+    };
 
-  const _queries =
-    typeof getQueries === 'function' ? await getQueries(ctx, queryProps, queryClient) : getQueries;
-  const queries = (
-    await Promise.all(
-      _queries
-        .filter(([queryKey]) => queryKey)
-        .map(async ([queryKey, fetcher]) => [await getQueryKey(queryKey!), fetcher])
-    )
-  ).filter(([queryKey]) => queryKey) as [QueryKey, Fetcher<QueryProps>][];
-  // let's extract only the query keys
-  const queryKeys = queries.map(([queryKey]) => queryKey);
-  // see if we have any cached in the query client
-  const data = getCachedQueryData(queryKeys, queryClient) || {};
-  const dataKeys = Object.keys(data);
-  const allArgsAreCached = dataKeys.length === queries.length;
-  // everything is cached, let's return it now
-  if (allArgsAreCached) return data;
-  // some or none of the args weren't available, as such we need to fetch them
-  const results = await Promise.all(
-    queries
-      // filter the items away that are already cached
-      .filter(([queryKey]) => {
-        const valueExists = !!data[hashQueryKey(queryKey)];
-        return !valueExists;
-      })
-      // map through and fetch the data for each
-      .map(async ([queryKey, fetcher]) => {
-        const value = await fetcher(ctx, queryProps, queryClient);
-        return [queryKey, value] as [QueryKey, typeof value];
-      })
-  );
+    const _queries =
+      typeof getQueries === 'function'
+        ? await getQueries(ctx, queryProps, queryClient)
+        : getQueries;
+    const queries = (
+      await Promise.all(
+        _queries
+          .filter(([queryKey]) => queryKey)
+          .map(async ([queryKey, fetcher]) => [await getQueryKey(queryKey!), fetcher])
+      )
+    ).filter(([queryKey]) => queryKey) as [QueryKey, Fetcher<QueryProps>][];
+    // let's extract only the query keys
+    const queryKeys = queries.map(([queryKey]) => queryKey);
+    // see if we have any cached in the query client
+    const data = getCachedQueryData(queryKeys, queryClient) || {};
+    const dataKeys = Object.keys(data);
+    const allArgsAreCached = dataKeys.length === queries.length;
+    // everything is cached, let's return it now
+    if (allArgsAreCached) return data;
+    // some or none of the args weren't available, as such we need to fetch them
+    const results = await Promise.all(
+      queries
+        // filter the items away that are already cached
+        .filter(([queryKey]) => {
+          const valueExists = !!data[hashQueryKey(queryKey)];
+          return !valueExists;
+        })
+        // map through and fetch the data for each
+        .map(async ([queryKey, fetcher]) => {
+          const value = await fetcher(ctx, queryProps, queryClient);
+          return [queryKey, value] as [QueryKey, typeof value];
+        })
+    );
 
-  results.forEach(([queryKey, result]) => {
-    // add them to the data object
-    data[hashQueryKey(queryKey)] = result;
-  });
-  // and return them!
-  return data;
+    results.forEach(([queryKey, result]) => {
+      // add them to the data object
+      data[hashQueryKey(queryKey)] = result;
+    });
+    // and return them!
+    return data;
+  } catch (e) {
+    return {
+      error: true,
+      message: e.message,
+    };
+  }
 }
