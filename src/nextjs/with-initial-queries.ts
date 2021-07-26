@@ -36,6 +36,10 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
     const Wrapper: NextPage<{
       initialQueryData: Record<string, unknown>;
     }> = ({ initialQueryData, ...props }) => {
+      if ('error' in initialQueryData)
+        // the error object { error: boolean; message: string }
+        return createElement(WrappedComponent, { ...initialQueryData, ...props } as PageProps);
+
       const initialQueries = useQueryInitialValues(initialQueryData);
 
       let initialValues = Array.from(initialQueries);

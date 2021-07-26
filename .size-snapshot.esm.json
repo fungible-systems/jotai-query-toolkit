@@ -1,8 +1,8 @@
 {
   "nextjs.js": {
-    "bundled": 6576,
-    "minified": 3654,
-    "gzipped": 1410,
+    "bundled": 6868,
+    "minified": 3785,
+    "gzipped": 1457,
     "treeshaked": {
       "rollup": {
         "code": 354,
