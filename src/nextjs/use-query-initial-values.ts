@@ -1,5 +1,6 @@
 import { initialDataAtom } from 'jotai-query-toolkit';
 import { Atom } from 'jotai/core/atom';
+import { hashQueryKey } from 'react-query';
 
 /**
  * useQueryInitialValues
@@ -19,7 +20,7 @@ export function useQueryInitialValues(props: Record<string, unknown>) {
   const atoms = queryKeys.map(queryKey => {
     const value = props[queryKey];
     if (!value)
-      throw Error('[Jotai Query Toolkit] no initial data found for ${hashQueryKey(queryKey)}');
+      throw Error(`[Jotai Query Toolkit] no initial data found for ${hashQueryKey(queryKey)}`);
     return [initialDataAtom(queryKey), value] as const;
   });
   return [...atoms] as Iterable<readonly [Atom<unknown>, unknown]>;
