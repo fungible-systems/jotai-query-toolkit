@@ -60,3 +60,6 @@ export type AtomFamily<Param, AtomType> = {
   remove(param: Param): void;
   setShouldRemove(shouldRemove: ShouldRemove<Param> | null): void;
 };
+
+export type GetQueryKey<Param> = (param: Param) => QueryKey;
+export type QueryKeyOrGetQueryKey<Param> = QueryKey | GetQueryKey<Param>;

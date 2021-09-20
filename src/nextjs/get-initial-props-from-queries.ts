@@ -84,7 +84,7 @@ export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>
     });
     // and return them!
     return data;
-  } catch (e) {
+  } catch (e: any) {
     return {
       error: true,
       message: e.message,

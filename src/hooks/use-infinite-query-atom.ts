@@ -32,7 +32,7 @@ export interface OptionalStatus extends BaseExtras {
 }
 
 export function useInfiniteQueryAtom<T>(
-  anAtom: WritableAtom<T, AtomWithInfiniteQueryAction>
+  anAtom: WritableAtom<T, AtomWithInfiniteQueryAction<T>>
 ): [T, OptionalStatus] {
   const value = useAtomValue<T>(anAtom);
   const deps = [anAtom] as const;
