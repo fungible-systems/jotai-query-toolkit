@@ -1,15 +1,15 @@
 {
   "nextjs.js": {
-    "bundled": 7065,
-    "minified": 3882,
-    "gzipped": 1490,
+    "bundled": 6903,
+    "minified": 3790,
+    "gzipped": 1467,
     "treeshaked": {
       "rollup": {
-        "code": 393,
-        "import_statements": 200
+        "code": 370,
+        "import_statements": 177
       },
       "webpack": {
-        "code": 1704
+        "code": 1648
       }
     }
   },

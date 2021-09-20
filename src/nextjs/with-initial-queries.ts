@@ -8,7 +8,6 @@ import { buildInitialValueAtoms } from './build-initial-value-atoms';
 
 import type { NextPage, NextPageContext } from 'next';
 import type { InitialValuesAtomBuilder, GetQueries, Queries, QueryPropsGetter } from './types';
-import { useAtomsSnapshot } from 'jotai/devtools';
 
 /**
  * withInitialQueries
@@ -43,10 +42,7 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
 
       const initialQueries = useQueryInitialValues(initialQueryData);
 
-      const snapshot = useAtomsSnapshot();
-      const snapshotArr = Array.from(snapshot);
-
-      let initialValues = Array.from(initialQueries).concat(snapshotArr);
+      let initialValues = Array.from(initialQueries);
 
       // sometimes apps require additional atoms to be set within this provider,
       // this will build the atoms and add them to our initialValues array
