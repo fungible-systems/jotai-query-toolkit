@@ -14,13 +14,17 @@ import type {
   AtomFamilyWithInfiniteQueryFn,
   AtomWithInfiniteQueryOptions,
 } from './types';
+import { QueryKeyOrGetQueryKey } from './types';
 
 export const atomFamilyWithInfiniteQuery = <Param, Data>(
-  key: QueryKey,
+  key: QueryKeyOrGetQueryKey<Param>,
   queryFn: AtomFamilyWithInfiniteQueryFn<Param, Data>,
   options: AtomWithInfiniteQueryOptions<Data> = {}
-): AtomFamily<Param, WritableAtom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>> =>
-  atomFamily<Param, InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>(param => {
+): AtomFamily<
+  Param,
+  WritableAtom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>
+> =>
+  atomFamily<Param, InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>(param => {
     const { queryKeyAtom, ...queryOptions } = options;
 
     // create our query atom
@@ -33,7 +37,7 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
       );
       queryAtom.debugLabel = makeDebugLabel<Param>(
         'atomFamilyWithInfiniteQuery/queryAtom',
-        key,
+        queryKey,
         param
       );
 
@@ -41,7 +45,7 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
     });
 
     // wrapper atom
-    const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>(
+    const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>(
       get => {
         const { queryAtom, queryKey } = get(baseAtom);
         const deps = [anAtom] as const;
@@ -50,7 +54,7 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-    anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithInfiniteQuery', key, param);
+    anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithInfiniteQuery', 'TODO:fix', param);
 
     return anAtom;
   }, deepEqual);

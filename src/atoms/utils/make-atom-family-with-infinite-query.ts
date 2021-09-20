@@ -19,7 +19,7 @@ type InitOptions<Param, Data> = MakeAtomFamilyWithInfiniteQueryOptions<Param, Da
 type Options<Data> = Omit<AtomWithInfiniteQueryOptions<Data>, 'queryKey' | 'queryFn'>;
 type Return<Param, Data> = AtomFamily<
   Param,
-  WritableAtom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction>
+  WritableAtom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>
 >;
 
 export const makeAtomFamilyWithInfiniteQuery = memoize(

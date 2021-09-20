@@ -25,32 +25,33 @@ export type JQTAtomWithQueryActions<Data> =
 export const atomWithQuery = <Data>(
   key: QueryKey,
   queryFn: AtomWithQueryFn<Data>,
-  options: AtomWithQueryOptions<Data> = {}
+  queryOptions: ((get: Getter) => AtomWithQueryOptions<Data>) | AtomWithQueryOptions<Data> = {}
 ) => {
-  const {
-    equalityFn = deepEqual,
-    getShouldRefetch,
-    queryKeyAtom,
-    refetchInterval,
-    refetchOnMount = false,
-    refetchOnWindowFocus = false,
-    refetchOnReconnect = false,
-    ...rest
-  } = options;
-  const getQueryKey = (get: Getter) => {
+  const getQueryKey = (get: Getter, queryKeyAtom: any) => {
     if (queryKeyAtom) return makeQueryKey(key, get(queryKeyAtom));
     return makeQueryKey(key);
   };
-
   const baseAtom = atom(get => {
-    const queryKey = getQueryKey(get);
+    const options = typeof queryOptions === 'function' ? queryOptions(get) : queryOptions;
+
+    const {
+      equalityFn = deepEqual,
+      getShouldRefetch,
+      queryKeyAtom,
+      refetchInterval,
+      refetchOnMount = false,
+      refetchOnWindowFocus = false,
+      refetchOnReconnect = false,
+      ...rest
+    } = options;
+
+    const queryKey = getQueryKey(get, queryKeyAtom);
     const hashedQueryKey = hashQueryKey(queryKey);
     const theInitialDataAtom = initialDataAtom(hashedQueryKey);
     const initialData = get(theInitialDataAtom) as unknown as Data;
 
     const shouldRefresh = getShouldRefetch && initialData ? getShouldRefetch(initialData) : true;
     const queryClient = get(queryClientAtom);
-    const defaultOptions = queryClient.defaultQueryOptions(rest);
 
     const getRefreshInterval = () => {
       return shouldRefresh
@@ -60,16 +61,20 @@ export const atomWithQuery = <Data>(
         : false;
     };
 
+    const defaultOptions = queryClient.defaultQueryOptions({
+      ...rest,
+      refetchInterval: getRefreshInterval(),
+      refetchOnMount: shouldRefresh ? refetchOnMount : false,
+      refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
+      refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
+      initialData,
+    });
+
     const queryAtom = jotaiAtomWithQuery<Data, void, Data, Data>(
       get => ({
         queryKey,
         queryFn: () => queryFn(get),
         ...defaultOptions,
-        refetchInterval: getRefreshInterval(),
-        refetchOnMount: shouldRefresh ? refetchOnMount : false,
-        refetchOnWindowFocus: shouldRefresh ? refetchOnWindowFocus : false,
-        refetchOnReconnect: shouldRefresh ? refetchOnReconnect : false,
-        initialData,
       }),
       getQueryClientAtom
     );

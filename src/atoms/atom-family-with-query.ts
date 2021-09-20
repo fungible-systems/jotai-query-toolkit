@@ -5,23 +5,28 @@ import { queryKeyCache } from '../utils';
 import { atomWithQuery } from './atom-with-query';
 import { setWeakCacheItem } from '../cache';
 import { getKeys, makeDebugLabel } from './utils/get-query-key';
-import type { QueryKey } from 'react-query';
 import type { JQTAtomWithQueryActions } from './atom-with-query';
-import type { AtomFamilyWithQueryFn, AtomWithQueryOptions } from './types';
+import type { AtomFamilyWithQueryFn, AtomWithQueryOptions, QueryKeyOrGetQueryKey } from './types';
 
 export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data>(
-  key: QueryKey,
+  key: QueryKeyOrGetQueryKey<Param>,
   queryFn: AtomFamilyWithQueryFn<Param, Data>,
-  options: AtomWithQueryOptions<Data> = {}
+  options: AtomWithQueryOptions<Data> | ((param: Param) => AtomWithQueryOptions<Data>) = {}
 ) =>
   atomFamily<Param, Data, JQTAtomWithQueryActions<Data>>(param => {
+    if (typeof options === 'function') options = options(param);
+
     const { queryKeyAtom, ...queryOptions } = options;
 
     // create our query atom
     const baseAtom = atom(get => {
       const { queryKey } = getKeys<Param>(get, key, param, queryKeyAtom);
       const queryAtom = atomWithQuery<Data>(queryKey, get => queryFn(get, param), queryOptions);
-      queryAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithQuery/queryAtom', key, param);
+      queryAtom.debugLabel = makeDebugLabel<Param>(
+        'atomFamilyWithQuery/queryAtom',
+        queryKey,
+        param
+      );
 
       return { queryAtom, queryKey };
     });
@@ -36,7 +41,7 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-    anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithQuery', key, param);
+    anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithQuery', 'TODO:fix', param);
 
     return anAtom;
   }, deepEqual);
