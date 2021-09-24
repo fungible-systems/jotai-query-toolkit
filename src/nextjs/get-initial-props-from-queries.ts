@@ -8,7 +8,7 @@ import {
 import { getCachedQueryData } from './query-helpers';
 
 /**
- * Get initial queries
+ * getInitialPropsFromQueries
  *
  * This is the main function that gives us a great developer and user experience when it comes to
  * fetching data on the server and making use of it on the client via atom state.

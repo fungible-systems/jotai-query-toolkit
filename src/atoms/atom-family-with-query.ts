@@ -21,7 +21,11 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
     // create our query atom
     const baseAtom = atom(get => {
       const { queryKey } = getKeys<Param>(get, key, param, queryKeyAtom);
-      const queryAtom = atomWithQuery<Data>(queryKey, get => queryFn(get, param), queryOptions);
+      const queryAtom = atomWithQuery<Data>(
+        queryKey,
+        (get, context) => queryFn(get, param, context),
+        queryOptions
+      );
       queryAtom.debugLabel = makeDebugLabel<Param>(
         'atomFamilyWithQuery/queryAtom',
         queryKey,

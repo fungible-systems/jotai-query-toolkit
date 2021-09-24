@@ -23,7 +23,6 @@ const conditionalQueryKeyAtom = (queryKey: QueryKey | undefined) => {
 export interface BaseExtras<T> extends QueryStatus {
   refetch: () => void;
   setQueryData: ({ data, options }: { data: T; options?: SetDataOptions }) => void;
-  // mutate: (options: MutationOptions<T>) => void;
 }
 
 export function useQueryAtom<T>(
@@ -67,16 +66,6 @@ export function useQueryAtom<T>(
       [atom]
     )
   );
-
-  // const mutate = useAtomCallback<void, MutationOptions<T>>(
-  //   useCallback(
-  //     async (get, set, payload) => {
-  //       const queryClient = get(getQueryClientAtom);
-  //       await queryClient.executeMutation(payload);
-  //     },
-  //     [atom]
-  //   )
-  // );
 
   const status = _status || {};
   return [
