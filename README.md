@@ -1,4 +1,4 @@
-# Jotai Query Toolkit (JQT)
+# 👻🏗️ Jotai Query Toolkit
 
 This is an opinionated toolkit for working with Jotai and react-query. This library extends upon the react-query
 integration found within jotai and includes some batteries included solutions for using these tools with next.js. You
