@@ -21,3 +21,6 @@ export type {
   GetInitialPropsFromQueriesOptions,
   QueryPropsDefault,
 } from './nextjs/types';
+
+export { getStaticQueryProps } from './nextjs/get-static-query-props';
+export { withInitialQueryData } from './nextjs/intial-queries-wrapper';
