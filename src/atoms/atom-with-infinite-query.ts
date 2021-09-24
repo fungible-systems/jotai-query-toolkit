@@ -14,29 +14,37 @@ import type { InfiniteData, QueryKey } from 'react-query';
 import type { AtomWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
 import type { Getter } from 'jotai';
 
+type QueryKeyOrGetQueryKey = QueryKey | ((get: Getter) => QueryKey);
+type QueryOptionsOrGetQueryOptions<Data> =
+  | ((get: Getter) => AtomWithInfiniteQueryOptions<Data>)
+  | AtomWithInfiniteQueryOptions<Data>;
+
+const getQueryKey = (get: Getter, key: QueryKeyOrGetQueryKey, queryKeyAtom: any) => {
+  const queryKey = typeof key === 'function' ? key(get) : key;
+  if (queryKeyAtom) return makeQueryKey(queryKey, get(queryKeyAtom));
+  return makeQueryKey(queryKey);
+};
+
 export const atomWithInfiniteQuery = <Data>(
-  key: QueryKey,
+  key: QueryKeyOrGetQueryKey,
   queryFn: AtomWithInfiniteQueryFn<Data>,
-  options: AtomWithInfiniteQueryOptions<Data> = {}
+  queryOptions: QueryOptionsOrGetQueryOptions<Data> = {}
 ) => {
-  const {
-    equalityFn = deepEqual,
-    getShouldRefetch,
-    queryKeyAtom,
-    refetchInterval,
-    refetchOnMount = false,
-    refetchOnWindowFocus = false,
-    refetchOnReconnect = false,
-    ...rest
-  } = options;
-
-  const getQueryKey = (get: Getter) => {
-    if (queryKeyAtom) return makeQueryKey(key, get(queryKeyAtom));
-    return makeQueryKey(key);
-  };
-
   const baseAtom = atom(get => {
-    const queryKey = getQueryKey(get);
+    const options = typeof queryOptions === 'function' ? queryOptions(get) : queryOptions;
+
+    const {
+      equalityFn = deepEqual,
+      getShouldRefetch,
+      queryKeyAtom,
+      refetchInterval,
+      refetchOnMount = false,
+      refetchOnWindowFocus = false,
+      refetchOnReconnect = false,
+      ...rest
+    } = options;
+
+    const queryKey = getQueryKey(get, key, queryKeyAtom);
     const hashedQueryKey = hashQueryKey(queryKey);
     const theInitialDataAtom = initialDataAtom(hashedQueryKey);
     const initialData = asInfiniteData(get(theInitialDataAtom) as unknown as Data);
@@ -84,7 +92,5 @@ export const atomWithInfiniteQuery = <Data>(
     },
     (get, set, action) => set(get(baseAtom).queryAtom, action)
   );
-  anAtom.debugLabel = `atomWithInfiniteQuery/${hashQueryKey(makeQueryKey(key))}`;
-
   return anAtom;
 };

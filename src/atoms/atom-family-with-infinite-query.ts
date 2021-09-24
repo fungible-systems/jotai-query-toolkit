@@ -54,7 +54,5 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-    anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithInfiniteQuery', 'TODO:fix', param);
-
     return anAtom;
   }, deepEqual);

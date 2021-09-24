@@ -11,6 +11,11 @@ import { queryKeyObserver } from './react-query/query-key-observer';
 import { SetDataOptions } from 'react-query/types/core/query';
 import { getQueryClientAtom, queryClientAtom } from './react-query/query-client-atom';
 
+type QueryKeyOrGetQueryKey = QueryKey | ((get: Getter) => QueryKey);
+type QueryOptionsOrGetQueryOptions<Data> =
+  | ((get: Getter) => AtomWithQueryOptions<Data>)
+  | AtomWithQueryOptions<Data>;
+
 export type JQTAtomWithQueryActions<Data> =
   | AtomWithQueryAction
   | {
@@ -22,15 +27,17 @@ export type JQTAtomWithQueryActions<Data> =
     }
   | { type: 'mutate'; payload: MutateOptions<Data> };
 
+const getQueryKey = (get: Getter, key: QueryKeyOrGetQueryKey, queryKeyAtom: any) => {
+  const queryKey = typeof key === 'function' ? key(get) : key;
+  if (queryKeyAtom) return makeQueryKey(queryKey, get(queryKeyAtom));
+  return makeQueryKey(queryKey);
+};
+
 export const atomWithQuery = <Data>(
-  key: QueryKey,
+  key: QueryKeyOrGetQueryKey,
   queryFn: AtomWithQueryFn<Data>,
-  queryOptions: ((get: Getter) => AtomWithQueryOptions<Data>) | AtomWithQueryOptions<Data> = {}
+  queryOptions: QueryOptionsOrGetQueryOptions<Data> = {}
 ) => {
-  const getQueryKey = (get: Getter, queryKeyAtom: any) => {
-    if (queryKeyAtom) return makeQueryKey(key, get(queryKeyAtom));
-    return makeQueryKey(key);
-  };
   const baseAtom = atom(get => {
     const options = typeof queryOptions === 'function' ? queryOptions(get) : queryOptions;
 
@@ -45,7 +52,7 @@ export const atomWithQuery = <Data>(
       ...rest
     } = options;
 
-    const queryKey = getQueryKey(get, queryKeyAtom);
+    const queryKey = getQueryKey(get, key, queryKeyAtom);
     const hashedQueryKey = hashQueryKey(queryKey);
     const theInitialDataAtom = initialDataAtom(hashedQueryKey);
     const initialData = get(theInitialDataAtom) as unknown as Data;
@@ -73,7 +80,7 @@ export const atomWithQuery = <Data>(
     const queryAtom = jotaiAtomWithQuery<Data, void, Data, Data>(
       get => ({
         queryKey,
-        queryFn: () => queryFn(get),
+        queryFn: context => queryFn(get, context),
         ...defaultOptions,
       }),
       getQueryClientAtom
@@ -119,7 +126,5 @@ export const atomWithQuery = <Data>(
       }
     }
   );
-  anAtom.debugLabel = `atomWithQuery/${hashQueryKey(makeQueryKey(key))}`;
-
   return anAtom;
 };

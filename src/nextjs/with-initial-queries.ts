@@ -12,8 +12,11 @@ import type { InitialValuesAtomBuilder, GetQueries, Queries, QueryPropsGetter } 
 /**
  * withInitialQueries
  *
- * Higher order function that wraps a next.js page component
+ * This is a higher-order-component (HoC) that wraps a next.js page with queries that
+ * are then fetched on the server and injected into a Jotai Provider.
  *
+ * @typeParam QueryProps - optional, these types are for the generic global query props that each query has access to
+ * @typeParam PageProps - the next.js page props
  * @param WrappedComponent - The next.js page component to wrap
  * @param initialValuesAtomBuilders - Optional values to add to our provider
  */
@@ -30,7 +33,7 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
    * @param getQueryProps - optional getter for additional context props that will be fed to getQueries
    */
   function withWrapper(
-    getQueries?: Queries<QueryProps> | GetQueries<QueryProps>,
+    getQueries: Queries<QueryProps> | GetQueries<QueryProps>,
     getQueryProps?: QueryPropsGetter<QueryProps>
   ): NextPage<PageProps> {
     const Wrapper: NextPage<{
@@ -67,19 +70,20 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
       );
     };
 
+    // This is how we can inject the query data into each page
+    // this is actually the new page for the wrapped page
     Wrapper.getInitialProps = async (ctx: NextPageContext) => {
-      const promises: Promise<any>[] = [];
+      const promises: Promise<any>[] = [
+        getInitialPropsFromQueries<QueryProps>({
+          getQueries,
+          getQueryProps,
+          ctx,
+          queryClient,
+        }),
+      ];
 
-      if (getQueries)
-        promises.push(
-          getInitialPropsFromQueries<QueryProps>({
-            getQueries,
-            getQueryProps,
-            ctx,
-            queryClient,
-          })
-        );
-
+      // if the wrapped page has a getInitialProps function
+      // we need to make sure to also fetch that data
       if (WrappedComponent.getInitialProps) {
         const asyncGetInitialProps = async () =>
           (await WrappedComponent?.getInitialProps?.(ctx)) || {};

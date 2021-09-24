@@ -23,7 +23,10 @@ export interface AtomWithInfiniteQueryOptions<Data>
   queryKeyAtom?: Atom<QueryKey> | PrimitiveAtom<QueryKey>;
 }
 
-export type AtomWithQueryFn<Data> = (get: Getter) => Data | Promise<Data>;
+export type AtomWithQueryFn<Data> = (
+  get: Getter,
+  context: QueryFunctionContext
+) => Data | Promise<Data>;
 export type AtomWithInfiniteQueryFn<Data> = (
   get: Getter,
   context: QueryFunctionContext
@@ -44,7 +47,8 @@ export type ParamWithListParams<T> = [param: T, options: ListParams];
 
 export type AtomFamilyWithQueryFn<Param, Data> = (
   get: Getter,
-  param: Param
+  param: Param,
+  context: QueryFunctionContext
 ) => Data | Promise<Data>;
 
 export type AtomFamilyWithInfiniteQueryFn<Param, Data> = (
@@ -61,5 +65,5 @@ export type AtomFamily<Param, AtomType> = {
   setShouldRemove(shouldRemove: ShouldRemove<Param> | null): void;
 };
 
-export type GetQueryKey<Param> = (param: Param) => QueryKey;
+export type GetQueryKey<Param> = (get: Getter, param: Param) => QueryKey;
 export type QueryKeyOrGetQueryKey<Param> = QueryKey | GetQueryKey<Param>;

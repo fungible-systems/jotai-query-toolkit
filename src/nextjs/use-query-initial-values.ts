@@ -5,7 +5,8 @@ import { hashQueryKey } from 'react-query';
 /**
  * useQueryInitialValues
  *
- * This hook is made to be used on next.js pages only to provide the initial data for our query atoms
+ * This hook is made to be used on next.js pages only to provide the initial data for our query atoms.
+ * Note: This should only be used by advanced users, withInitialQueries makes use of this internally.
  *
  * ```typescript
  * const queryKeys = [SomeEnum.SomeKey];
