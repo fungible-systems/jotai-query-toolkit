@@ -8,7 +8,7 @@ import { getWeakCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
 import type { InfiniteQueryStatus } from '../atoms/react-query/infinite-query-key-status-atom';
-import type { QueryKey } from 'react-query';
+import type { InfiniteData, QueryKey } from 'react-query';
 import type { AtomWithInfiniteQueryAction } from 'jotai/query';
 
 const noopAtom = atom<undefined>(undefined);
@@ -32,9 +32,9 @@ export interface OptionalStatus extends BaseExtras {
 }
 
 export function useInfiniteQueryAtom<T>(
-  anAtom: WritableAtom<T, AtomWithInfiniteQueryAction<T>>
-): [T, OptionalStatus] {
-  const value = useAtomValue<T>(anAtom);
+  anAtom: WritableAtom<InfiniteData<T> | undefined, AtomWithInfiniteQueryAction<T>>
+): [InfiniteData<T> | undefined, OptionalStatus] {
+  const value = useAtomValue<InfiniteData<T> | undefined>(anAtom);
   const deps = [anAtom] as const;
   const queryKey = getWeakCacheItem<QueryKey>(queryKeyCache, deps);
   if (!queryKey)

@@ -36,9 +36,12 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
     getQueries: Queries<QueryProps> | GetQueries<QueryProps>,
     getQueryProps?: QueryPropsGetter<QueryProps>
   ): NextPage<PageProps> {
-    const Wrapper: NextPage<{
+    function Wrapper({
+      initialQueryData,
+      ...props
+    }: {
       initialQueryData: Record<string, unknown>;
-    }> = ({ initialQueryData, ...props }) => {
+    }) {
       if ('error' in initialQueryData)
         // the error object { error: boolean; message: string }
         return createElement(WrappedComponent, { ...initialQueryData, ...props } as PageProps);
@@ -68,7 +71,7 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
         { initialValues, key },
         createElement(WrappedComponent, props as PageProps)
       );
-    };
+    }
 
     // This is how we can inject the query data into each page
     // this is actually the new page for the wrapped page

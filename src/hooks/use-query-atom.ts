@@ -27,7 +27,7 @@ export interface BaseExtras<T> extends QueryStatus {
 
 export function useQueryAtom<T>(
   anAtom: WritableAtom<T, JQTAtomWithQueryActions<T>>
-): [T, BaseExtras<T>] {
+): [T extends Promise<infer V> ? V : T, BaseExtras<T>] {
   const atom = useMemo(() => anAtom, [anAtom]);
   const value = useAtomValue<T>(atom);
   const deps = [atom] as const;
