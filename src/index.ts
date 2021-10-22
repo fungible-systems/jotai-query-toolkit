@@ -13,11 +13,6 @@ export { queryKeyObserver } from './atoms/react-query/query-key-observer';
 export { infiniteQueryKeyObserver } from './atoms/react-query/infinite-query-key-observer';
 export { devtoolAtom } from './atoms/devtool-atom';
 
-// utils
-export { makeAtomWithQuery } from './atoms/utils/make-atom-with-query';
-export { makeAtomFamilyWithQuery } from './atoms/utils/make-atom-family-with-query';
-export { makeAtomFamilyWithInfiniteQuery } from './atoms/utils/make-atom-family-with-infinite-query';
-
 //hooks
 export { useInfiniteQueryAtom } from './hooks/use-infinite-query-atom';
 export { useQueryAtom } from './hooks/use-query-atom';

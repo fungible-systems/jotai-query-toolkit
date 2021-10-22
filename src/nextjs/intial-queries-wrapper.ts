@@ -6,6 +6,7 @@ import { buildInitialValueAtoms } from './build-initial-value-atoms';
 
 import type { NextPage } from 'next';
 import type { InitialValuesAtomBuilder } from './types';
+import { Atom } from 'jotai/core/atom';
 
 /**
  * withInitialQueryData
@@ -23,15 +24,18 @@ export function withInitialQueryData<QueryProps = unknown, PageProps = Record<st
   initialValuesAtomBuilders?: InitialValuesAtomBuilder[]
 ) {
   const Wrapper: NextPage<{
-    initialQueryData: Record<string, unknown>;
+    initialQueryData?: Record<string, unknown>;
   }> = ({ initialQueryData, ...props }) => {
-    if ('error' in initialQueryData)
-      // the error object { error: boolean; message: string }
-      return createElement(WrappedComponent, { ...initialQueryData, ...props } as PageProps);
+    let initialValues: [Atom<unknown>, unknown][] = [];
 
-    const initialQueries = useQueryInitialValues(initialQueryData);
+    if (initialQueryData) {
+      if ('error' in initialQueryData)
+        // the error object { error: boolean; message: string }
+        return createElement(WrappedComponent, { ...initialQueryData, ...props } as PageProps);
 
-    let initialValues = Array.from(initialQueries);
+      const initialQueries = useQueryInitialValues(initialQueryData);
+      initialValues = Array.from(initialQueries);
+    }
 
     // sometimes apps require additional atoms to be set within this provider,
     // this will build the atoms and add them to our initialValues array
@@ -44,7 +48,7 @@ export function withInitialQueryData<QueryProps = unknown, PageProps = Record<st
       });
     }
 
-    const keys = Object.keys(initialQueryData);
+    const keys = initialQueryData ? Object.keys(initialQueryData) : [];
     // this key is very important, without passing key={key} to the Provider,
     // it won't know to re-render if someone navigates within the same page component in next.js
     const key = useMemo(() => hashQueryKey(keys), [keys]);

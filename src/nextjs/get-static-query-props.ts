@@ -36,16 +36,3 @@ export function getStaticQueryProps<QueryProps = undefined, PageProps = any>(
     };
   };
 }
-
-// // the same kind of getQueries from withInitialQueries
-// const getQueries: GetQueries = context => {
-//   return [['query-key', async () => 'hello-world']];
-// };
-//
-// // the getStaticProps that will be exported from a page
-// export const getStaticProps = getStaticQueryProps(getQueries)(async context => {
-//   return {
-//     props: {},
-//     revalidate: 60,
-//   };
-// });
