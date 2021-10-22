@@ -21,14 +21,14 @@
     "./package.json": "./package.json",
     ".": {
       "types": "./index.d.ts",
-      "module": "./esm/index.mjs",
-      "import": "./esm/index.mjs",
+      "module": "./esm/index.js",
+      "import": "./esm/index.js",
       "default": "./index.js"
     },
     "./nextjs": {
       "types": "./nextjs.d.ts",
-      "module": "./esm/nextjs.mjs",
-      "import": "./esm/nextjs.mjs",
+      "module": "./esm/nextjs.js",
+      "import": "./esm/nextjs.js",
       "default": "./nextjs.js"
     }
   },
@@ -133,7 +133,7 @@
     "prettier": "2.4.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-query": "3.26.0",
+    "react-query": "3.27.0",
     "rollup": "2.58.0",
     "rollup-plugin-dts": "^4.0.0",
     "rollup-plugin-esbuild": "4.5.0",
