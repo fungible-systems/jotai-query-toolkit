@@ -43,5 +43,5 @@ export interface GetInitialPropsFromQueriesOptions<QueryProps> {
 
 export type InitialValuesAtomBuilder = [
   propKey: string,
-  atomBuilder: (propData: any) => readonly [Atom<unknown>, unknown]
+  atomBuilder: (propData: any) => [Atom<unknown>, unknown]
 ];

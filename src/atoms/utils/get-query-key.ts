@@ -1,7 +1,8 @@
 import { Atom, Getter } from 'jotai';
 import { hashQueryKey, QueryKey } from 'react-query';
-import { makeQueryKey } from 'jotai-query-toolkit';
+
 import { QueryKeyOrGetQueryKey } from '../types';
+import { makeQueryKey } from '../../utils';
 
 export const getQueryKey = <Param>(
   get: Getter,

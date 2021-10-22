@@ -24,5 +24,5 @@ export function useQueryInitialValues(props: Record<string, unknown>) {
       throw Error(`[Jotai Query Toolkit] no initial data found for ${hashQueryKey(queryKey)}`);
     return [initialDataAtom(queryKey), value] as const;
   });
-  return [...atoms] as Iterable<readonly [Atom<unknown>, unknown]>;
+  return [...atoms] as [Atom<unknown>, unknown][];
 }
