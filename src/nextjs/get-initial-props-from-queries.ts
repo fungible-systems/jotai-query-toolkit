@@ -48,15 +48,21 @@ export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>
       typeof getQueries === 'function'
         ? await getQueries(ctx, queryProps, queryClient)
         : getQueries;
+
+    if (!_queries) return {};
+
     const queries = (
       await Promise.all(
         _queries
-          .filter(([queryKey]) => queryKey)
+          .filter(([queryKey]) => !!queryKey)
           .map(async ([queryKey, fetcher]) => [await getQueryKey(queryKey!), fetcher])
       )
     ).filter(([queryKey]) => queryKey) as [QueryKey, Fetcher<QueryProps>][];
     // let's extract only the query keys
     const queryKeys = queries.map(([queryKey]) => queryKey);
+
+    if (queryKeys.length === 0) return {};
+
     // see if we have any cached in the query client
     const data = getCachedQueryData(queryKeys, queryClient) || {};
     const dataKeys = Object.keys(data);

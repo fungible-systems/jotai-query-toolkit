@@ -16,6 +16,11 @@ export { devtoolAtom } from './atoms/devtool-atom';
 //hooks
 export { useInfiniteQueryAtom } from './hooks/use-infinite-query-atom';
 export { useQueryAtom } from './hooks/use-query-atom';
+export type {
+  UseInfiniteQueryAtomBaseExtras,
+  OptionalStatus,
+} from './hooks/use-infinite-query-atom';
+export type { UseQueryAtomBaseExtras } from './hooks/use-query-atom';
 
 // types
 export type {

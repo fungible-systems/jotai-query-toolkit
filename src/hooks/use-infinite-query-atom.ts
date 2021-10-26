@@ -18,13 +18,13 @@ const conditionalQueryKeyAtom = (queryKey: QueryKey | undefined) => {
   return infiniteQueryKeyStatusAtom(queryKey);
 };
 
-export interface BaseExtras {
+export interface UseInfiniteQueryAtomBaseExtras {
   fetchNextPage: () => void;
   fetchPreviousPage: () => void;
   refetch: () => void;
 }
 
-export interface OptionalStatus extends BaseExtras {
+export interface OptionalStatus extends UseInfiniteQueryAtomBaseExtras {
   isFetchingPreviousPage: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
