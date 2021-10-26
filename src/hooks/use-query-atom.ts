@@ -20,14 +20,14 @@ const conditionalQueryKeyAtom = (queryKey: QueryKey | undefined) => {
   return queryKeyStatusAtom(queryKey);
 };
 
-export interface BaseExtras<T> extends QueryStatus {
+export interface UseQueryAtomBaseExtras<T> extends QueryStatus {
   refetch: () => void;
   setQueryData: ({ data, options }: { data: T; options?: SetDataOptions }) => void;
 }
 
 export function useQueryAtom<T>(
   anAtom: WritableAtom<T, JQTAtomWithQueryActions<T>>
-): [T extends Promise<infer V> ? V : T, BaseExtras<T>] {
+): [T extends Promise<infer V> ? V : T, UseQueryAtomBaseExtras<T>] {
   const atom = useMemo(() => anAtom, [anAtom]);
   const value = useAtomValue<T>(atom);
   const deps = [atom] as const;

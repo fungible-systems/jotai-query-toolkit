@@ -16,43 +16,35 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
     | ((param: Param, get: Getter) => AtomWithQueryOptions<Data>) = {}
 ) =>
   atomFamily<Param, Data, JQTAtomWithQueryActions<Data>>(param => {
-    const originAtom: any = atom<Data, JQTAtomWithQueryActions<Data>>(
+    const baseAtom = atom(get => {
+      if (typeof options === 'function') options = options(param, get);
+      const { queryKeyAtom, ...queryOptions } = options;
+      // create our query atom
+      const { queryKey } = getKeys<Param>(get, key, param, queryKeyAtom);
+      const queryAtom = atomWithQuery<Data>(
+        queryKey,
+        (get, context) => queryFn(get, param, context),
+        queryOptions
+      );
+      queryAtom.debugLabel = makeDebugLabel<Param>(
+        'atomFamilyWithQuery/queryAtom',
+        queryKey,
+        param
+      );
+
+      return { queryAtom, queryKey };
+    });
+
+    // wrapper atom
+    const anAtom = atom<Data, JQTAtomWithQueryActions<Data>>(
       get => {
-        if (typeof options === 'function') options = options(param, get);
-        const { queryKeyAtom, ...queryOptions } = options;
-        // create our query atom
-        const baseAtom = atom(get => {
-          const { queryKey } = getKeys<Param>(get, key, param, queryKeyAtom);
-          const queryAtom = atomWithQuery<Data>(
-            queryKey,
-            (get, context) => queryFn(get, param, context),
-            queryOptions
-          );
-          queryAtom.debugLabel = makeDebugLabel<Param>(
-            'atomFamilyWithQuery/queryAtom',
-            queryKey,
-            param
-          );
-
-          return { queryAtom, queryKey };
-        });
-
-        // wrapper atom
-        const anAtom = atom<Data, JQTAtomWithQueryActions<Data>>(
-          get => {
-            const { queryAtom, queryKey } = get(baseAtom);
-            const deps = [anAtom] as const;
-            setWeakCacheItem(queryKeyCache, deps, queryKey);
-            return get(queryAtom);
-          },
-          (get, set, action) => set(get(baseAtom).queryAtom, action)
-        );
-        anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithQuery', 'TODO:fix', param);
-
-        return get(anAtom);
+        const { queryAtom, queryKey } = get(baseAtom);
+        const deps = [anAtom] as const;
+        setWeakCacheItem(queryKeyCache, deps, queryKey);
+        return get(queryAtom);
       },
-      (get, set, action) => set(originAtom, action)
+      (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-
-    return originAtom;
+    anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithQuery', 'TODO:fix', param);
+    return anAtom;
   }, deepEqual);

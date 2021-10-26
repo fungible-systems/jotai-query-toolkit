@@ -1,10 +1,10 @@
-import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
-import { GetQueries, Queries, QueryPropsGetter } from './types';
 import { getInitialPropsFromQueries } from './get-initial-props-from-queries';
 import { queryClient } from 'jotai-query-toolkit';
+import type { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
+import type { GetQueries, Queries, QueryPropsGetter } from './types';
 
 export function getServerSideQueryProps<QueryProps = undefined, PageProps = any>(
-  getQueries: Queries<QueryProps> | GetQueries<QueryProps>,
+  getQueries?: Queries<QueryProps> | GetQueries<QueryProps>,
   getQueryProps?: QueryPropsGetter<QueryProps>
 ) {
   return (getServerSideProps?: GetServerSideProps<PageProps>) => {
@@ -16,22 +16,24 @@ export function getServerSideQueryProps<QueryProps = undefined, PageProps = any>
         return { props: {} };
       };
 
-      const promises: Promise<any>[] = [
-        getInitialPropsFromQueries<QueryProps>({
-          getQueries,
-          getQueryProps,
-          ctx,
-          queryClient,
-        }),
-        _getServerSideProps(),
-      ];
+      const promises: Promise<any>[] = [_getServerSideProps()];
 
-      const [initialQueryData, serverProps] = await Promise.all(promises);
+      if (typeof getQueries !== 'undefined') {
+        promises.push(
+          getInitialPropsFromQueries<QueryProps>({
+            getQueries,
+            getQueryProps,
+            ctx,
+            queryClient,
+          })
+        );
+      }
 
-      if (!('props' in serverProps)) return serverProps;
+      // const [serverProps, initialQueryData] = await Promise.all(promises);
+
       return {
         props: {
-          ...serverProps.props,
+          ...(serverProps?.props || {}),
           initialQueryData,
         },
       };

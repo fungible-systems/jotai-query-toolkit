@@ -23,4 +23,6 @@ export type {
 } from './nextjs/types';
 
 export { getStaticQueryProps } from './nextjs/get-static-query-props';
+export { getServerSideQueryProps } from './nextjs/get-server-side-query-props';
+export { getInitialQueryProps } from './nextjs/get-initial-query-props';
 export { withInitialQueryData } from './nextjs/intial-queries-wrapper';
