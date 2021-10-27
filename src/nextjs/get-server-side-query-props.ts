@@ -29,7 +29,7 @@ export function getServerSideQueryProps<QueryProps = undefined, PageProps = any>
         );
       }
 
-      // const [serverProps, initialQueryData] = await Promise.all(promises);
+      const [serverProps, initialQueryData] = await Promise.all(promises);
 
       return {
         props: {
