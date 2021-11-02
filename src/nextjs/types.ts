@@ -41,7 +41,7 @@ export interface GetInitialPropsFromQueriesOptions<QueryProps> {
   queryClient: QueryClient;
 }
 
-export type InitialValuesAtomBuilder = [
-  propKey: string,
-  atomBuilder: (propData: any) => [Atom<unknown>, unknown]
+export type InitialValuesAtomBuilder<Key = string> = [
+  propKey: Key,
+  atomBuilder: (propData: unknown) => readonly [Atom<unknown>, unknown]
 ];

@@ -1,12 +1,9 @@
-import { createElement, useMemo } from 'react';
+import { createElement } from 'react';
 import { Provider } from 'jotai';
-import { hashQueryKey } from 'react-query';
-import { useQueryInitialValues } from './use-query-initial-values';
-import { buildInitialValueAtoms } from './build-initial-value-atoms';
+import { useGetProviderInitialValues } from './use-get-initial-query-props';
 
 import type { NextPage } from 'next';
 import type { InitialValuesAtomBuilder } from './types';
-import { Atom } from 'jotai/core/atom';
 
 /**
  * withInitialQueryData
@@ -25,38 +22,15 @@ export function withInitialQueryData<QueryProps = unknown, PageProps = Record<st
 ) {
   const Wrapper: NextPage<{
     initialQueryData?: Record<string, unknown>;
-  }> = ({ initialQueryData, ...props }) => {
-    let initialValues: [Atom<unknown>, unknown][] = [];
-
-    if (initialQueryData) {
-      if ('error' in initialQueryData)
-        // the error object { error: boolean; message: string }
-        return createElement(WrappedComponent, { ...initialQueryData, ...props } as PageProps);
-
-      const initialQueries = useQueryInitialValues(initialQueryData);
-      initialValues = Array.from(initialQueries);
-    }
-
-    // sometimes apps require additional atoms to be set within this provider,
-    // this will build the atoms and add them to our initialValues array
-    if (initialValuesAtomBuilders) {
-      initialValues = initialValues.concat(
-        buildInitialValueAtoms(props as Record<string, unknown>, initialValuesAtomBuilders)
-      );
-      initialValuesAtomBuilders.forEach(([propKey]) => {
-        delete (props as Record<string, unknown>)[propKey];
-      });
-    }
-
-    const keys = initialQueryData ? Object.keys(initialQueryData) : [];
-    // this key is very important, without passing key={key} to the Provider,
-    // it won't know to re-render if someone navigates within the same page component in next.js
-    const key = useMemo(() => hashQueryKey(keys), [keys]);
-
+  }> = props => {
+    const { initialValues, key, ...childProps } = useGetProviderInitialValues(
+      props,
+      initialValuesAtomBuilders
+    );
     return createElement(
       Provider,
       { initialValues, key },
-      createElement(WrappedComponent, props as PageProps)
+      createElement(WrappedComponent, childProps as PageProps)
     );
   };
 
