@@ -16,11 +16,11 @@ import { hashQueryKey } from 'react-query';
  *
  * @param props - the data generated from {@link getInitialPropsFromQueries}, should not be created manually.
  */
-export function useQueryInitialValues(props: Record<string, unknown>) {
-  const queryKeys = Object.keys(props);
+export function useQueryInitialValues(props?: Record<string, unknown>) {
+  const queryKeys = props ? Object.keys(props) : [];
   const atoms = queryKeys.map(queryKey => {
-    const value = props[queryKey];
-    if (!value)
+    const value = props ? props[queryKey] : null;
+    if (queryKey && !value)
       throw Error(`[Jotai Query Toolkit] no initial data found for ${hashQueryKey(queryKey)}`);
     return [initialDataAtom(queryKey), value] as const;
   });
