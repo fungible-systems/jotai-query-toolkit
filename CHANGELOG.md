@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.15
+
+### Patch Changes
+
+- [#21](https://github.com/fungible-systems/jotai-query-toolkit/pull/21) [`2389018`](https://github.com/fungible-systems/jotai-query-toolkit/commit/238901869f8cecd2ba00184d99dcf6f2b5e04db8) Thanks [@aulneau](https://github.com/aulneau)! - Small fix around nextjs integration.
+
 ## 0.1.14
 
 ### Patch Changes
