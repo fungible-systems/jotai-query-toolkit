@@ -1,5 +1,13 @@
 # jotai-query-toolkit
 
+## 0.1.16
+
+### Patch Changes
+
+- [#24](https://github.com/fungible-systems/jotai-query-toolkit/pull/24) [`a344f76`](https://github.com/fungible-systems/jotai-query-toolkit/commit/a344f7625dbd4b8d4c24d5d52f2964d85095f914) Thanks [@aulneau](https://github.com/aulneau)! - Makes it so you do not have to pass props to useQueryInitialValues.
+
+* [`6ababc9`](https://github.com/fungible-systems/jotai-query-toolkit/commit/6ababc9726caf6b8a10a4db2e3c33ee0b124d08a) Thanks [@aulneau](https://github.com/aulneau)! - Fixes a small issue around peer deps.
+
 ## 0.1.15
 
 ### Patch Changes
