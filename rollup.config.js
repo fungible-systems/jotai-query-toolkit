@@ -12,7 +12,7 @@ function external(id) {
   return !id.startsWith('.') && !id.startsWith(root);
 }
 
-function getBabelOptions(targets, packageName) {
+function getBabelOptions(targets) {
   const config = createBabelConfig({ env: env => env === 'build' }, targets);
   const plugins = config.plugins;
   return {
@@ -50,12 +50,12 @@ function createDeclarationConfig(input) {
   };
 }
 
-function createESMConfig(input) {
+function createESMConfig(input, file) {
   return {
     input,
     output: {
       format: 'esm',
-      dir: 'dist/esm',
+      file,
     },
     external,
     plugins: [resolve({ extensions }), getEsbuild('esnext')],

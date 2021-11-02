@@ -49,10 +49,12 @@ export function withInitialQueries<QueryProps = unknown, PageProps = Record<stri
       Wrapper.getInitialProps = getInitialQueryProps<QueryProps, PageProps>(
         getQueries,
         getQueryProps
+        // eslint-disable-next-line @typescript-eslint/unbound-method
       )(getInitialProps || WrappedComponent.getInitialProps);
     } else if (hasCustomGetInitialProps) {
       Wrapper.getInitialProps = getInitialProps;
     } else if (hasWrappedComponentGetInitialProps) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       Wrapper.getInitialProps = WrappedComponent.getInitialProps;
     }
 
