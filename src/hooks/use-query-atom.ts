@@ -6,10 +6,9 @@ import { queryKeyCache } from '../utils';
 import { getWeakCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
-import type { QueryKey } from 'react-query';
+import type { QueryKey, SetDataOptions } from 'react-query';
 import { queryKeyStatusAtom, QueryStatus } from '../atoms/react-query/query-key-status-atom';
 import { JQTAtomWithQueryActions } from '../atoms/atom-with-query';
-import { SetDataOptions } from 'react-query/types/core/query';
 import { queryKeyObserver } from '../atoms/react-query/query-key-observer';
 import { getQueryClientAtom } from '../atoms/react-query/query-client-atom';
 
