@@ -1,14 +1,13 @@
 import deepEqual from 'fast-deep-equal/es6';
 import { atom, Getter } from 'jotai';
 import { atomWithQuery as jotaiAtomWithQuery, AtomWithQueryAction } from 'jotai/query';
-import { hashQueryKey, MutateOptions, QueryKey } from 'react-query';
+import { hashQueryKey, MutateOptions, QueryKey, SetDataOptions } from 'react-query';
 import { makeQueryKey, queryKeyCache } from '../utils';
 import { initialDataAtom } from './intitial-data-atom';
 import { IS_SSR, QueryRefreshRates } from '../constants';
 import { AtomWithQueryOptions, AtomWithQueryFn } from './types';
 import { setWeakCacheItem } from '../cache';
 import { queryKeyObserver } from './react-query/query-key-observer';
-import { SetDataOptions } from 'react-query/types/core/query';
 import { getQueryClientAtom, queryClientAtom } from './react-query/query-client-atom';
 
 type QueryKeyOrGetQueryKey = QueryKey | ((get: Getter) => QueryKey);
