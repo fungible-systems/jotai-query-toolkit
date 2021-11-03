@@ -133,7 +133,6 @@
     "prettier": "2.4.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-query": "3.27.0",
     "rollup": "2.58.0",
     "rollup-plugin-dts": "^4.0.0",
     "rollup-plugin-esbuild": "4.5.0",
@@ -144,9 +143,9 @@
     "typescript": "4.4.3"
   },
   "dependencies": {
-    "jotai": ">=1.4.2",
-    "fast-deep-equal": ">=3.1.3",
-    "react-query": ">=3.31.0"
+    "jotai": "latest",
+    "fast-deep-equal": "latest",
+    "react-query": "latest"
   },
   "peerDependencies": {
     "next": "*",
