@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.17
+
+### Patch Changes
+
+- [#25](https://github.com/fungible-systems/jotai-query-toolkit/pull/25) [`62b126e`](https://github.com/fungible-systems/jotai-query-toolkit/commit/62b126ebaf7dfaebce8265d619f82d4bb9990633) Thanks [@aulneau](https://github.com/aulneau)! - This updates the versions for react-query and jotai.
+
 ## 0.1.16
 
 ### Patch Changes
