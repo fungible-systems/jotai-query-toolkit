@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.18
+
+### Patch Changes
+
+- [#28](https://github.com/fungible-systems/jotai-query-toolkit/pull/28) [`24111df`](https://github.com/fungible-systems/jotai-query-toolkit/commit/24111df5d5ef26fc152658f7202658fb06e7c7a8) Thanks [@hstove](https://github.com/hstove)! - fix: allow falsy values in initial values
+
 ## 0.1.17
 
 ### Patch Changes
