@@ -1,3 +1,4 @@
+import { makeWeakCache } from './cache';
 import type { QueryKey } from 'react-query';
 
 const spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined;
@@ -31,11 +32,12 @@ export function makeQueryKey<P>(key: QueryKey, param?: P): [QueryKey, P] | Query
   return flattenedParam ? [flattenedKey, flattenedParam].flat(100) : flattenedKey;
 }
 
-export const queryKeyCache = new WeakMap();
+export const queryKeyCache = makeWeakCache<QueryKey>();
 
 export function makeMessage(message: string) {
   return `[jotai-query-toolkit] ${message}`;
 }
+
 export function makeError(message: string) {
   return new Error(makeMessage(message));
 }

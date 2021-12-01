@@ -3,7 +3,7 @@ import { atom } from 'jotai';
 import { useAtomCallback, useAtomValue } from 'jotai/utils';
 
 import { infiniteQueryKeyStatusAtom } from '../atoms/react-query/infinite-query-key-status-atom';
-import { queryKeyCache } from '../utils';
+import { makeMessage, queryKeyCache } from '../utils';
 import { getWeakCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
@@ -36,12 +36,15 @@ export function useInfiniteQueryAtom<T>(
 ): [InfiniteData<T> | undefined, OptionalStatus] {
   const value = useAtomValue<InfiniteData<T> | undefined>(anAtom);
   const deps = [anAtom] as const;
-  const queryKey = getWeakCacheItem<QueryKey>(queryKeyCache, deps);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const queryKey = getWeakCacheItem<QueryKey>(queryKeyCache as any, deps);
   if (!queryKey)
-    throw Error(
-      `[Jotai Query Toolkit] no query key was found for ${
-        anAtom.debugLabel || anAtom.toString()
-      }, is it an atomFamilyWithInfiniteQuery atom?`
+    console.error(
+      makeMessage(
+        `no query key was found for ${
+          anAtom.debugLabel || anAtom.toString()
+        }, is it an atomFamilyWithInfiniteQuery atom?`
+      )
     );
   const statusAtom = useMemo(() => conditionalQueryKeyAtom(queryKey), [queryKey]);
   const status = useAtomValue(statusAtom);
@@ -55,10 +58,10 @@ export function useInfiniteQueryAtom<T>(
   const refetch = useAtomCallback(useCallback((get, set) => set(anAtom, { type: 'refetch' }), []));
 
   const optionalStatus = {
-    isFetchingPreviousPage: (status as InfiniteQueryStatus).isFetchingPreviousPage,
-    isFetchingNextPage: (status as InfiniteQueryStatus).isFetchingNextPage,
-    hasNextPage: !!(status as InfiniteQueryStatus).hasNextPage,
-    hasPreviousPage: !!(status as InfiniteQueryStatus).hasPreviousPage,
+    isFetchingPreviousPage: (status as InfiniteQueryStatus)?.isFetchingPreviousPage || false,
+    isFetchingNextPage: (status as InfiniteQueryStatus)?.isFetchingNextPage || false,
+    hasNextPage: !!(status as InfiniteQueryStatus)?.hasNextPage || false,
+    hasPreviousPage: !!(status as InfiniteQueryStatus)?.hasPreviousPage || false,
   };
 
   return [

@@ -6,6 +6,8 @@ import {
   QueryPropsDefault,
 } from './types';
 import { getCachedQueryData } from './query-helpers';
+import { IS_DEV } from '../constants';
+import { makeMessage } from '../utils';
 
 /**
  * getInitialPropsFromQueries
@@ -61,7 +63,10 @@ export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>
     // let's extract only the query keys
     const queryKeys = queries.map(([queryKey]) => queryKey);
 
-    if (queryKeys.length === 0) return {};
+    if (queryKeys.length === 0) {
+      if (IS_DEV) console.error(makeMessage('getInitialPropsFromQueries -> no query keys'));
+      return {};
+    }
 
     // see if we have any cached in the query client
     const data = getCachedQueryData(queryKeys, queryClient) || {};
@@ -91,6 +96,7 @@ export async function getInitialPropsFromQueries<QueryProps = QueryPropsDefault>
     // and return them!
     return data;
   } catch (e: any) {
+    if (IS_DEV) console.error(makeMessage(e?.message as string));
     return {
       error: true,
       message: e.message,
