@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.20
+
+### Patch Changes
+
+- [`f6ddb00`](https://github.com/fungible-systems/jotai-query-toolkit/commit/f6ddb00fae12c8e46962991eb156d60f627b902e) Thanks [@aulneau](https://github.com/aulneau)! - This prevents an error from being thrown during dev mode.
+
 ## 0.1.19
 
 ### Patch Changes
