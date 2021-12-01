@@ -3,7 +3,7 @@ import { atom, Getter } from 'jotai';
 import { atomFamily } from 'jotai/utils';
 import { queryKeyCache } from '../utils';
 import { atomWithQuery } from './atom-with-query';
-import { setWeakCacheItem } from '../cache';
+import { createMemoizeAtom, setWeakCacheItem } from '../cache';
 import { getKeys, makeDebugLabel } from './utils/get-query-key';
 import type { JQTAtomWithQueryActions } from './atom-with-query';
 import type { AtomFamilyWithQueryFn, AtomWithQueryOptions, QueryKeyOrGetQueryKey } from './types';
@@ -14,8 +14,10 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
   options:
     | AtomWithQueryOptions<Data>
     | ((param: Param, get: Getter) => AtomWithQueryOptions<Data>) = {}
-) =>
-  atomFamily<Param, Data, JQTAtomWithQueryActions<Data>>(param => {
+) => {
+  const memoized = createMemoizeAtom<Data, JQTAtomWithQueryActions<Data>>();
+
+  return atomFamily<Param, Data, JQTAtomWithQueryActions<Data>>(param => {
     const baseAtom = atom(get => {
       if (typeof options === 'function') options = options(param, get);
       const { queryKeyAtom, ...queryOptions } = options;
@@ -36,15 +38,20 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
     });
 
     // wrapper atom
-    const anAtom = atom<Data, JQTAtomWithQueryActions<Data>>(
-      get => {
-        const { queryAtom, queryKey } = get(baseAtom);
-        const deps = [anAtom] as const;
-        setWeakCacheItem(queryKeyCache, deps, queryKey);
-        return get(queryAtom);
-      },
-      (get, set, action) => set(get(baseAtom).queryAtom, action)
+    const anAtom = memoized(
+      () =>
+        atom<Data, JQTAtomWithQueryActions<Data>>(
+          get => {
+            const { queryAtom, queryKey } = get(baseAtom);
+            const deps = [anAtom] as const;
+            setWeakCacheItem(queryKeyCache, deps, queryKey);
+            return get(queryAtom);
+          },
+          (get, set, action) => set(get(baseAtom).queryAtom, action)
+        ),
+      [baseAtom]
     );
     anAtom.debugLabel = makeDebugLabel<Param>('atomFamilyWithQuery', 'TODO:fix', param);
     return anAtom;
   }, deepEqual);
+};

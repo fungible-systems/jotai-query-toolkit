@@ -12,6 +12,7 @@ export { queryKeyStatusAtom } from './atoms/react-query/query-key-status-atom';
 export { queryKeyObserver } from './atoms/react-query/query-key-observer';
 export { infiniteQueryKeyObserver } from './atoms/react-query/infinite-query-key-observer';
 export { devtoolAtom } from './atoms/devtool-atom';
+export * from './atoms/static-query';
 
 //hooks
 export { useInfiniteQueryAtom } from './hooks/use-infinite-query-atom';

@@ -5,7 +5,7 @@ import { GetStaticPropsContext } from 'next';
 
 export type QueryPropsDefault = unknown | undefined;
 
-export type Fetcher<Data = any, QueryProps = QueryPropsDefault> = (
+export type Fetcher<Data = unknown, QueryProps = QueryPropsDefault> = (
   ctx: NextPageContext | GetServerSidePropsContext | GetStaticPropsContext,
   queryProps?: QueryProps,
   queryClient?: QueryClient
@@ -17,9 +17,9 @@ export type GetQueryKey<QueryProps = QueryPropsDefault> = (
   queryClient?: QueryClient
 ) => QueryKey | Promise<QueryKey | undefined> | undefined;
 
-export type Query<QueryProps = QueryPropsDefault> = [
+export type Query<Data = unknown, QueryProps = QueryPropsDefault> = [
   queryKey: GetQueryKey<QueryProps> | QueryKey | undefined,
-  fetcher: Fetcher<any, QueryProps>
+  fetcher: Fetcher<Data, QueryProps>
 ];
 export type Queries<QueryProps = QueryPropsDefault> = Readonly<Query<QueryProps>>[];
 
