@@ -9,6 +9,7 @@ import { AtomWithQueryOptions, AtomWithQueryFn } from './types';
 import { setWeakCacheItem } from '../cache';
 import { queryKeyObserver } from './react-query/query-key-observer';
 import { getQueryClientAtom, queryClientAtom } from './react-query/query-client-atom';
+import { Atom } from 'jotai/ts3.4';
 
 type QueryKeyOrGetQueryKey = QueryKey | ((get: Getter) => QueryKey);
 type QueryOptionsOrGetQueryOptions<Data> =
@@ -26,7 +27,7 @@ export type JQTAtomWithQueryActions<Data> =
     }
   | { type: 'mutate'; payload: MutateOptions<Data> };
 
-const getQueryKey = (get: Getter, key: QueryKeyOrGetQueryKey, queryKeyAtom: any) => {
+const getQueryKey = (get: Getter, key: QueryKeyOrGetQueryKey, queryKeyAtom?: Atom<QueryKey>) => {
   const queryKey = typeof key === 'function' ? key(get) : key;
   if (queryKeyAtom) return makeQueryKey(queryKey, get(queryKeyAtom));
   return makeQueryKey(queryKey);
@@ -106,7 +107,7 @@ export const atomWithQuery = <Data>(
       switch (action.type) {
         case 'refetch': {
           const observer = get(queryKeyObserver(queryKey));
-          void observer.refetch();
+          void observer?.refetch();
           break;
         }
         case 'setQueryData': {
