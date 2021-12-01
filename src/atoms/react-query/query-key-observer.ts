@@ -4,9 +4,10 @@ import { atom } from 'jotai';
 import { getQueryClientAtom } from './query-client-atom';
 import deepEqual from 'fast-deep-equal/es6';
 
-export const queryKeyObserver = atomFamily<QueryKey, QueryObserver>(
+export const queryKeyObserver = atomFamily<QueryKey | undefined, QueryObserver | undefined>(
   queryKey =>
     atom(get => {
+      if (!queryKey) return;
       const queryClient = getQueryClientAtom(get);
       const options = queryClient.getQueryCache().find(queryKey)?.options || { queryKey };
       const defaultedOptions = queryClient.defaultQueryObserverOptions({

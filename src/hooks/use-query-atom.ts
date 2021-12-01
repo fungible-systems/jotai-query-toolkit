@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { atom } from 'jotai';
 import { useAtomCallback, useAtomValue } from 'jotai/utils';
 
-import { queryKeyCache } from '../utils';
+import { makeMessage, queryKeyCache } from '../utils';
 import { getWeakCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
@@ -11,6 +11,7 @@ import { queryKeyStatusAtom, QueryStatus } from '../atoms/react-query/query-key-
 import { JQTAtomWithQueryActions } from '../atoms/atom-with-query';
 import { queryKeyObserver } from '../atoms/react-query/query-key-observer';
 import { getQueryClientAtom } from '../atoms/react-query/query-client-atom';
+import { IS_DEV } from '../constants';
 
 const noopAtom = atom<undefined>(undefined);
 
@@ -24,6 +25,17 @@ export interface UseQueryAtomBaseExtras<T> extends QueryStatus {
   setQueryData: ({ data, options }: { data: T; options?: SetDataOptions }) => void;
 }
 
+function makeErrorLog(anAtom?: any) {
+  if (IS_DEV)
+    console.error(
+      makeMessage(
+        `no query key was found for ${
+          anAtom.debugLabel || anAtom.toString() || 'UnknownAtom'
+        }, is it an atomFamilyWithQuery atom?`
+      )
+    );
+}
+
 export function useQueryAtom<T>(
   anAtom: WritableAtom<T, JQTAtomWithQueryActions<T>>
 ): [T extends Promise<infer V> ? V : T, UseQueryAtomBaseExtras<T>] {
@@ -31,22 +43,21 @@ export function useQueryAtom<T>(
   const value = useAtomValue<T>(atom);
   const deps = [atom] as const;
   const queryKey = getWeakCacheItem<QueryKey>(queryKeyCache, deps);
-  if (!queryKey)
-    throw Error(
-      `[Jotai Query Toolkit] no query key was found for ${
-        atom.debugLabel || atom.toString()
-      }, is it an atomFamilyWithQuery atom?`
-    );
+  if (!queryKey) makeErrorLog(anAtom);
 
   const statusAtom = useMemo(() => conditionalQueryKeyAtom(queryKey), [queryKey]);
   const _status = useAtomValue(statusAtom);
   const refetch = useAtomCallback(
     useCallback(
-      async (get, set) => {
+      async get => {
+        if (!queryKey) {
+          makeErrorLog(anAtom);
+          return;
+        }
         const observer = get(queryKeyObserver(queryKey));
-        await observer.refetch();
+        await observer?.refetch();
       },
-      [atom]
+      [anAtom, queryKey]
     )
   );
 
@@ -59,10 +70,14 @@ export function useQueryAtom<T>(
   >(
     useCallback(
       async (get, set, payload) => {
+        if (!queryKey) {
+          makeErrorLog(anAtom);
+          return;
+        }
         const queryClient = getQueryClientAtom(get);
         await queryClient.getQueryCache().find(queryKey)?.setData(payload.data, payload.options);
       },
-      [atom]
+      [anAtom, queryKey]
     )
   );
 
