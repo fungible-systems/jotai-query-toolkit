@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.19
+
+### Patch Changes
+
+- [#31](https://github.com/fungible-systems/jotai-query-toolkit/pull/31) [`94ab573`](https://github.com/fungible-systems/jotai-query-toolkit/commit/94ab5736e4efdce652fc8e4f7eb6fad5807b9021) Thanks [@aulneau](https://github.com/aulneau)! - This update cleans up some of the typings around various functions, and removes certain checks while in dev mode.
+
 ## 0.1.18
 
 ### Patch Changes
