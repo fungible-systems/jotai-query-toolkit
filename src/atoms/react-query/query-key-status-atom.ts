@@ -16,7 +16,15 @@ export const queryStatusAtomFamily = atomFamily<QueryKey, QueryStatus, QueryStat
   queryKey =>
     atomWithDefault<QueryStatus>(get => {
       const observer = get(queryKeyObserver(queryKey));
-      const { isFetching, isLoading, isIdle, isSuccess, isStale } = observer.getCurrentResult();
+      if (!observer)
+        return {
+          isLoading: false,
+          isFetching: false,
+          isIdle: false,
+          isSuccess: false,
+          isStale: false,
+        };
+      const { isFetching, isLoading, isIdle, isSuccess, isStale } = observer?.getCurrentResult();
       return {
         isLoading,
         isFetching,
@@ -50,8 +58,7 @@ export const queryKeyStatusAtom = atomFamily<QueryKey, QueryStatus>(queryKey => 
 
     statusAtom.onMount = update => {
       setData = update;
-      const unsubscribe = observer.subscribe(listener);
-      return unsubscribe;
+      return observer?.subscribe(listener);
     };
 
     return get(statusAtom);
