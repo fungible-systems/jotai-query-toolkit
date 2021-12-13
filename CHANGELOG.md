@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.22
+
+### Patch Changes
+
+- [#37](https://github.com/fungible-systems/jotai-query-toolkit/pull/37) [`00b5246`](https://github.com/fungible-systems/jotai-query-toolkit/commit/00b5246ea40ee9a6669739ebb891fbc5819bb4ed) Thanks [@aulneau](https://github.com/aulneau)! - This improves some of the ways we were caching certain atoms, and uses use-memo-one for more stable atom references.
+
 ## 0.1.21
 
 ### Patch Changes
