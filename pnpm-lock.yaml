@@ -58,8 +58,8 @@ specifiers:
 
 dependencies:
   fast-deep-equal: 3.1.3
-  jotai: 1.4.2_c4ec041de57a5987515a557de85548fd
-  react-query: 3.31.0_react-dom@17.0.2+react@17.0.2
+  jotai: 1.4.7_4ff50ad20108238e753ad2bdb54c5a32
+  react-query: 3.34.2_react-dom@17.0.2+react@17.0.2
 
 devDependencies:
   '@babel/core': 7.15.8
@@ -6292,8 +6292,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jotai/1.4.2_c4ec041de57a5987515a557de85548fd:
-    resolution: {integrity: sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==}
+  /jotai/1.4.7_4ff50ad20108238e753ad2bdb54c5a32:
+    resolution: {integrity: sha512-EZFmhovnufIVoH0OAW6kuOv8RLjCX2HvHEqzwRG79l/LDeyp1BI+85vrEpR/fQmqh3jUhY4SyjhboEItd4+reQ==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
       '@babel/core': '*'
@@ -6328,7 +6328,7 @@ packages:
     dependencies:
       '@babel/core': 7.15.8
       react: 17.0.2
-      react-query: 3.31.0_react-dom@17.0.2+react@17.0.2
+      react-query: 3.34.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
   /joycon/3.0.1:
@@ -7860,8 +7860,8 @@ packages:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: true
 
-  /react-query/3.31.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-6NiXgjdXBKGA9ge04NI21uqTCIpH6qzR8AGGom/nR/emaGc//D9KM6C6+AEy8zLYl4RYjvd/XhA3lWME5kGMiw==}
+  /react-query/3.34.2_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-Y817mmZa65kysW5YloRiC6/3zj/S7/dphUOfK4ujqVcKtl7/NkiMqJv3hjnLCS9cYeOA4pU8LmYQCSPQALrkcg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
       react-dom: '*'

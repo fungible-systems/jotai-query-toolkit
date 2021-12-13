@@ -1,10 +1,11 @@
 import deepEqual from 'fast-deep-equal/es6';
-import { atom, Getter } from 'jotai';
+import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
 import { queryKeyCache } from '../utils';
 import { atomWithQuery } from './atom-with-query';
 import { createMemoizeAtom, setWeakCacheItem } from '../cache';
 import { getKeys, makeDebugLabel } from './utils/get-query-key';
+import type { Getter } from 'jotai';
 import type { JQTAtomWithQueryActions } from './atom-with-query';
 import type { AtomFamilyWithQueryFn, AtomWithQueryOptions, QueryKeyOrGetQueryKey } from './types';
 
@@ -28,12 +29,6 @@ export const atomFamilyWithQuery = <Param, Data, Error = void, TQueryData = Data
         (get, context) => queryFn(get, param, context),
         queryOptions
       );
-      queryAtom.debugLabel = makeDebugLabel<Param>(
-        'atomFamilyWithQuery/queryAtom',
-        queryKey,
-        param
-      );
-
       return { queryAtom, queryKey };
     });
 

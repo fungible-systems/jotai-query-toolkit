@@ -11,7 +11,21 @@ export const getQueryKey = <Param>(
   queryKeyAtom?: Atom<QueryKey>
 ) => {
   const key = typeof getKey === 'function' ? getKey(get, param as Param) : getKey;
-  if (queryKeyAtom) return makeQueryKey(key, [param, get(queryKeyAtom)]);
+  // check so we don't include it more than once
+  const hashedParams = param ? hashQueryKey(param).slice(1, -1) : undefined;
+  const hashedKey = hashQueryKey(key);
+  const hashedContainsParams = hashedKey?.includes(hashedParams);
+
+  // todo: should probably deprecate this
+  if (queryKeyAtom) {
+    const qkAtomValue = get(queryKeyAtom);
+    return makeQueryKey(key, hashedContainsParams ? qkAtomValue : [param, qkAtomValue]);
+  }
+
+  // do not include params more than 1 time
+  if (hashedContainsParams) return makeQueryKey(key);
+
+  // params not included, so we should include them
   return makeQueryKey(key, param);
 };
 
