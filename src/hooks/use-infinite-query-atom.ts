@@ -1,15 +1,16 @@
-import { useCallback, useMemo } from 'react';
+import { useCallbackOne, useMemoOne } from 'use-memo-one';
 import { atom } from 'jotai';
 import { useAtomCallback, useAtomValue } from 'jotai/utils';
 
 import { infiniteQueryKeyStatusAtom } from '../atoms/react-query/infinite-query-key-status-atom';
 import { makeMessage, queryKeyCache } from '../utils';
-import { getWeakCacheItem } from '../cache';
+import { getCacheItem } from '../cache';
 
 import type { WritableAtom } from 'jotai';
 import type { InfiniteQueryStatus } from '../atoms/react-query/infinite-query-key-status-atom';
 import type { InfiniteData, QueryKey } from 'react-query';
 import type { AtomWithInfiniteQueryAction } from 'jotai/query';
+import { Atom } from 'jotai/core/atom';
 
 const noopAtom = atom<undefined>(undefined);
 
@@ -34,28 +35,49 @@ export interface OptionalStatus extends UseInfiniteQueryAtomBaseExtras {
 export function useInfiniteQueryAtom<T>(
   anAtom: WritableAtom<InfiniteData<T> | undefined, AtomWithInfiniteQueryAction<T>>
 ): [InfiniteData<T> | undefined, OptionalStatus] {
-  const value = useAtomValue<InfiniteData<T> | undefined>(anAtom);
-  const deps = [anAtom] as const;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const queryKey = getWeakCacheItem<QueryKey>(queryKeyCache as any, deps);
-  if (!queryKey)
-    console.error(
-      makeMessage(
-        `no query key was found for ${
-          anAtom.debugLabel || anAtom.toString()
-        }, is it an atomFamilyWithInfiniteQuery atom?`
-      )
-    );
-  const statusAtom = useMemo(() => conditionalQueryKeyAtom(queryKey), [queryKey]);
+  const memoizedAtom = useMemoOne(() => anAtom, [anAtom]);
+  const value = useAtomValue<InfiniteData<T> | undefined>(memoizedAtom);
+  const queryKey = getCacheItem<QueryKey>(queryKeyCache, memoizedAtom);
+
+  const withQueryKeyWarning = useCallbackOne(() => {
+    if (!queryKey)
+      console.warn(
+        makeMessage(
+          `no query key was found for ${memoizedAtom.debugLabel || memoizedAtom.toString()}`
+        )
+      );
+  }, [queryKey, memoizedAtom]);
+
+  const statusAtom = useMemoOne<Atom<unknown>>(() => conditionalQueryKeyAtom(queryKey), [queryKey]);
   const status = useAtomValue(statusAtom);
 
   const fetchNextPage = useAtomCallback(
-    useCallback((get, set) => set(anAtom, { type: 'fetchNextPage' }), [])
+    useCallbackOne(
+      (get, set) => {
+        withQueryKeyWarning();
+        set(memoizedAtom, { type: 'fetchNextPage' });
+      },
+      [memoizedAtom]
+    )
   );
   const fetchPreviousPage = useAtomCallback(
-    useCallback((get, set) => set(anAtom, { type: 'fetchPreviousPage' }), [])
+    useCallbackOne(
+      (get, set) => {
+        withQueryKeyWarning();
+        set(memoizedAtom, { type: 'fetchPreviousPage' });
+      },
+      [memoizedAtom]
+    )
   );
-  const refetch = useAtomCallback(useCallback((get, set) => set(anAtom, { type: 'refetch' }), []));
+  const refetch = useAtomCallback(
+    useCallbackOne(
+      (get, set) => {
+        withQueryKeyWarning();
+        set(memoizedAtom, { type: 'refetch' });
+      },
+      [memoizedAtom]
+    )
+  );
 
   const optionalStatus = {
     isFetchingPreviousPage: (status as InfiniteQueryStatus)?.isFetchingPreviousPage || false,

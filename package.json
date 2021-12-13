@@ -138,12 +138,13 @@
     "shx": "0.3.3",
     "ts-jest": "27.0.5",
     "tslib": "2.3.1",
-    "typescript": "4.4.3"
+    "typescript": "4.5.3"
   },
   "dependencies": {
-    "jotai": "latest",
     "fast-deep-equal": "latest",
-    "react-query": "latest"
+    "jotai": "latest",
+    "react-query": "latest",
+    "use-memo-one": "1.1.2"
   },
   "peerDependencies": {
     "next": "*",

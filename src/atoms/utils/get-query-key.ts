@@ -12,9 +12,11 @@ export const getQueryKey = <Param>(
 ) => {
   const key = typeof getKey === 'function' ? getKey(get, param as Param) : getKey;
   // check so we don't include it more than once
-  const hashedParams = param ? hashQueryKey(param).slice(1, -1) : undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const hashedParams = param ? hashQueryKey(param as any).slice(1, -1) : undefined;
   const hashedKey = hashQueryKey(key);
-  const hashedContainsParams = hashedKey?.includes(hashedParams);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const hashedContainsParams = hashedKey?.includes(hashedParams as any);
 
   // todo: should probably deprecate this
   if (queryKeyAtom) {

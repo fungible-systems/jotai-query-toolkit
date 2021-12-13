@@ -1,8 +1,17 @@
 import type { WritableAtom } from 'jotai';
 
 export type WeakCache<T> = WeakMap<object, [WeakCache<T>] | [WeakCache<T>, T]>;
+export type Cache<T> = WeakMap<object, T>;
 
 export const makeWeakCache = <T>(): WeakCache<T> => new WeakMap();
+
+export const getCacheItem = <T>(cache: Cache<T>, dep: object): T | undefined => {
+  const entry = cache.get(dep);
+  if (entry) return entry;
+};
+export const setCacheItem = <T>(cache: Cache<T>, dep: object, item: T): void => {
+  if (!cache.get(dep as object)) cache.set(dep as object, item as T);
+};
 
 export const getWeakCacheItem = <T>(
   cache: WeakCache<T>,

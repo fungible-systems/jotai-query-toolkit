@@ -4,7 +4,7 @@ import { atomFamily } from 'jotai/utils';
 import { getKeys } from './utils/get-query-key';
 import { atomWithInfiniteQuery } from './atom-with-infinite-query';
 import { queryKeyCache } from '../utils';
-import { setWeakCacheItem } from '../cache';
+import { setCacheItem } from '../cache';
 
 import type { WritableAtom, Getter } from 'jotai';
 import type { AtomWithInfiniteQueryAction } from 'jotai/query';
@@ -44,12 +44,10 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
     const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>(
       get => {
         const { queryAtom, queryKey } = get(baseAtom);
-        const deps = [anAtom] as const;
-        setWeakCacheItem(queryKeyCache, deps, queryKey);
+        setCacheItem(queryKeyCache, anAtom, queryKey);
         return get(queryAtom);
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
-
     return anAtom;
   }, deepEqual);
