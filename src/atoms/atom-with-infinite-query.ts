@@ -12,14 +12,14 @@ import { getQueryClientAtom } from './react-query/query-client-atom';
 import type { AtomWithInfiniteQueryAction } from 'jotai/query';
 import type { InfiniteData, QueryKey } from 'react-query';
 import type { AtomWithInfiniteQueryFn, AtomWithInfiniteQueryOptions } from './types';
-import type { Getter } from 'jotai';
+import type { Getter, Atom } from 'jotai';
 
 type QueryKeyOrGetQueryKey = QueryKey | ((get: Getter) => QueryKey);
 type QueryOptionsOrGetQueryOptions<Data> =
   | ((get: Getter) => AtomWithInfiniteQueryOptions<Data>)
   | AtomWithInfiniteQueryOptions<Data>;
 
-const getQueryKey = (get: Getter, key: QueryKeyOrGetQueryKey, queryKeyAtom: any) => {
+const getQueryKey = (get: Getter, key: QueryKeyOrGetQueryKey, queryKeyAtom?: Atom<QueryKey>) => {
   const queryKey = typeof key === 'function' ? key(get) : key;
   if (queryKeyAtom) return makeQueryKey(queryKey, get(queryKeyAtom));
   return makeQueryKey(queryKey);
