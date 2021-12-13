@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.21
+
+### Patch Changes
+
+- [#35](https://github.com/fungible-systems/jotai-query-toolkit/pull/35) [`aba4298`](https://github.com/fungible-systems/jotai-query-toolkit/commit/aba4298f9a670752d7c684799a2f52f11b1f326e) Thanks [@aulneau](https://github.com/aulneau)! - This has a small fix for how we generate query-keys for our atom families, this should prevent keys from including params more than one time.
+
 ## 0.1.20
 
 ### Patch Changes
