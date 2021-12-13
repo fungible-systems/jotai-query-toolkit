@@ -41,7 +41,7 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
     });
 
     // wrapper atom
-    return atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>(
+    const anAtom = atom<InfiniteData<Data> | undefined, AtomWithInfiniteQueryAction<Data>>(
       get => {
         const { queryAtom, queryKey } = get(baseAtom);
         const deps = [anAtom] as const;
@@ -50,4 +50,6 @@ export const atomFamilyWithInfiniteQuery = <Param, Data>(
       },
       (get, set, action) => set(get(baseAtom).queryAtom, action)
     );
+
+    return anAtom;
   }, deepEqual);
