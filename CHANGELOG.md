@@ -1,5 +1,11 @@
 # jotai-query-toolkit
 
+## 0.1.23
+
+### Patch Changes
+
+- [#39](https://github.com/fungible-systems/jotai-query-toolkit/pull/39) [`172e916`](https://github.com/fungible-systems/jotai-query-toolkit/commit/172e9163f1f08b8501c82371c84f2796e59339eb) Thanks [@aulneau](https://github.com/aulneau)! - This updates the build tooling to improve bundle sizes and tree shaking.
+
 ## 0.1.22
 
 ### Patch Changes
